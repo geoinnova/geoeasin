@@ -130,9 +130,9 @@
         </widget>
        </widget>
       </widget>
-      <widget class="QWidget" name="tabAbout">
+      <widget class="QWidget" name="tabLog">
        <attribute name="title">
-        <string>About</string>
+        <string>Log</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">

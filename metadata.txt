@@ -5,8 +5,8 @@
 [general]
 name=GeoEASIN
 qgisMinimumVersion=3.0
-description=Data downloader from EASIN Geospatial Web Services
-version=0.1
+description=Web services downloader and tools to analyze the European Alien Species Information Network data (EASIN).
+version=0.2
 author=Patricio Soriano. Geoinnova
 email=patricio.soriano@geoinnova.org
 

@@ -24,7 +24,6 @@
 import os
 import os.path
 
-
 # import resources
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
@@ -34,7 +33,7 @@ from qgis.PyQt.QtWidgets import QAction
 # Import the code for the DockWidget
 
 from .gui.geo_easin_dockwidget import GeoEASINDockWidget
-from .gui.about_dialog import  AboutDialog
+from .gui.about_dialog import AboutDialog
 
 # Import processing libraries
 
@@ -82,15 +81,14 @@ class GeoEASIN:
         self.toolbar = self.iface.addToolBar(u'GeoEASIN')
         self.toolbar.setObjectName(u'GeoEASIN')
 
-        #print "** INITIALIZING GeoEASIN"
+
+
+        # print "** INITIALIZING GeoEASIN"
 
         self.pluginIsActive = False
         self.dockwidget = None
-
         self.provider = None
-
         self.first_start = None
-
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -107,18 +105,17 @@ class GeoEASIN:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('GeoEASIN', message)
 
-
     def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
+            self,
+            icon_path,
+            text,
+            callback,
+            enabled_flag=True,
+            add_to_menu=True,
+            add_to_toolbar=True,
+            status_tip=None,
+            whats_this=None,
+            parent=None):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -204,7 +201,7 @@ class GeoEASIN:
 
         self.initProcessing()
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def onClosePlugin(self):
         """Cleanup necessary items here when plugin dockwidget is closed"""
@@ -214,11 +211,10 @@ class GeoEASIN:
 
         self.pluginIsActive = False
 
-
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
 
-        #print "** UNLOAD GeoEASIN"
+        # print "** UNLOAD GeoEASIN"
 
         for action in self.actions:
             self.iface.removePluginWebMenu(
@@ -230,7 +226,7 @@ class GeoEASIN:
 
         QgsApplication.processingRegistry().removeProvider(self.provider)
 
-    #--------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def open_dock_search(self):
         """Run method that loads and starts the plugin"""
@@ -238,8 +234,7 @@ class GeoEASIN:
         if not self.pluginIsActive:
             self.pluginIsActive = True
 
-            #print "** STARTING GeoEASIN"
-
+            # print "** STARTING GeoEASIN"
 
             # dockwidget may not exist if:
             #    first run of plugin
