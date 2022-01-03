@@ -3,3 +3,8 @@
 
 compile.bat
 pylintrc
+
+/.idea/
+*/__pycache__
+
+*/*.pyc
