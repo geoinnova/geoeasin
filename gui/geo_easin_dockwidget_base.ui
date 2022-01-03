@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tabSearch">
        <attribute name="title">
@@ -85,50 +85,6 @@
          </widget>
         </item>
        </layout>
-      </widget>
-      <widget class="QWidget" name="tabTools">
-       <attribute name="title">
-        <string>Tools</string>
-       </attribute>
-       <widget class="QGroupBox" name="groupBaseMap">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>521</width>
-          <height>71</height>
-         </rect>
-        </property>
-        <property name="title">
-         <string>Load base map layers</string>
-        </property>
-        <widget class="QPushButton" name="btnBaseMapOSM">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>30</y>
-           <width>75</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Add OSM</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="btnBaseMapCountries">
-         <property name="geometry">
-          <rect>
-           <x>110</x>
-           <y>30</y>
-           <width>161</width>
-           <height>23</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Add countries layer</string>
-         </property>
-        </widget>
-       </widget>
       </widget>
       <widget class="QWidget" name="tabLog">
        <attribute name="title">

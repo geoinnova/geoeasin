@@ -32,5 +32,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     #
-    from .geo_easin_simple import GeoEASIN
+    from .geo_easin import GeoEASIN
     return GeoEASIN(iface)
