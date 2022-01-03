@@ -15,6 +15,7 @@ from qgis.core import QgsRasterLayer, QgsVectorLayer, QgsProject
 from .gui.about_dialog import AboutDialog
 from .gui.geo_easin_dockwidget import GeoEASINDockWidget
 from .processing_tools.processing_tools_provider import ProcessingToolsProvider
+from .tools import basemaps
 
 
 class GeoEASIN:
@@ -64,15 +65,15 @@ class GeoEASIN:
     def add_action(self, text, callback, icon_path=None, status_tip=None, whats_this=None):
         """Add a toolbar icon to the toolbar.
         """
-        if status_tip is not None:
+        if icon_path is not None:
             icon = QIcon(icon_path)
             action = QAction(icon, text, self.iface.mainWindow())
         else:
             action = QAction(text, self.iface.mainWindow())
 
         action.triggered.connect(callback)
-
         # action.triggered.connect( lambda param1: callback(param1))
+
 
         if status_tip is not None:
             action.setStatusTip(status_tip)
@@ -93,7 +94,6 @@ class GeoEASIN:
         icon_map = self.plugin_dir + '/img/map.svg'
         icon5 = self.plugin_dir + '/img/anadir.svg'
 
-
         self.action_search_specie = self.add_action("&Search by specie",
                                                     self.open_dock_search,
                                                     icon_search,
@@ -106,9 +106,18 @@ class GeoEASIN:
                                             "About",
                                             "Open About dialog")
 
-        self.action_addOSM = self.add_action("&Add &OSM",
-                                             self.addTileLayer,
+        self.action_addOSM = self.add_action("OpenStreetMap",
+                                             basemaps.addTileLayer,
                                              icon_about)
+        self.action_addWMSCopernicusRiverBasin = self.add_action("Copernicus River Basine",
+                                                                 basemaps.addWMSCopernicusRiver,
+                                                                 icon_about)
+        self.action_addWMSCopernicusCLC2018 = self.add_action("Corine Land Cover 2018",
+                                                              basemaps.addWMSCopernicusCLC2018,
+                                                              icon_about)
+        self.action_addWMSCopernicusNatura2000 = self.add_action("Natura2000/N2K_2018",
+                                                                 basemaps.addWMSCopernicusNatura2000N2k2018,
+                                                                 icon_about)
 
         # add toolbar button and menu item
         self.iface.addToolBarIcon(self.action_search_specie)
@@ -151,6 +160,9 @@ class GeoEASIN:
 
         #  Submenu BaseMaps Actions
         self.submenu_basemaps.addAction(self.action_addOSM)
+        self.submenu_basemaps.addAction(self.action_addWMSCopernicusRiverBasin)
+        self.submenu_basemaps.addAction(self.action_addWMSCopernicusCLC2018)
+        self.submenu_basemaps.addAction(self.action_addWMSCopernicusNatura2000)
 
         #  Action about
         self.main_menu.addAction(self.action_about)
@@ -226,28 +238,3 @@ class GeoEASIN:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             pass
-
-    def addTileLayer(self, text):
-        urlWithParams = 'type=xyz&url=https://a.tile.openstreetmap.org/%7Bz%7D/%7Bx%7D/%7By%7D.png&zmax=19&zmin=0&crs=EPSG3857'
-        rlayer = QgsRasterLayer(urlWithParams, 'OpenStreetMap', 'wms')
-
-        if rlayer.isValid():
-            QgsProject.instance().addMapLayer(rlayer)
-        else:
-            print('invalid layer')
-
-    def addVectorLayer(self):
-        # get the path to the shapefile e.g. /home/project/data/ports.shp
-        plugin_dir = os.path.dirname(__file__)
-
-        layer = "data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp"
-
-        path_layer = os.path.join(plugin_dir, layer)
-
-        print(path_layer)
-
-        vlayer = QgsVectorLayer(path_layer, "ne_10m_admin_0_countries", "ogr")
-        if not vlayer.isValid():
-            print("Layer failed to load!")
-        else:
-            QgsProject.instance().addMapLayer(vlayer)
