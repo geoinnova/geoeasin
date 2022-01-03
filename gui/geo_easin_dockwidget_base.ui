@@ -92,11 +92,7 @@
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
-         <widget class="QPlainTextEdit" name="plainTextEdit">
-          <property name="plainText">
-           <string>Texto</string>
-          </property>
-         </widget>
+         <widget class="QTextBrowser" name="logInfoText"/>
         </item>
        </layout>
       </widget>
