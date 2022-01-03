@@ -6,5 +6,6 @@ pylintrc
 
 /.idea/
 */__pycache__
+*/processing_tools/__pycache__
 
 */*.pyc
