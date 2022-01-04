@@ -139,9 +139,8 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.data = None
         self.data_filter = None
-        self.list_search = [True, False, True, False, True, False]
         self.dict_to_search_for = {}
-        self.has_data = False
+
 
         # Search Button
         self.btnSearch.setEnabled(False)
@@ -176,7 +175,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.cb_IsDeleted.stateChanged.connect(lambda: self.apply_filters(self.cb_IsDeleted))
         self.cb_IsParasite.stateChanged.connect(lambda: self.apply_filters(self.cb_IsParasite))
 
-        # Option filters
+        # Option filters https://www.delftstack.com/es/tutorial/pyqt5/pyqt5-radiobutton/
 
         self.rb_Impact_All.setChecked(True)
         self.rb_Impact_High.setChecked(False)
@@ -185,6 +184,10 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.rb_Impact_All.setEnabled(False)
         self.rb_Impact_High.setEnabled(False)  # Hi
         self.rb_Impact_Low.setEnabled(False)  # Lo
+
+        self.rb_Impact_All.toggled.connect(self.onClickedImpact)
+        self.rb_Impact_High.toggled.connect(self.onClickedImpact)
+        self.rb_Impact_Low.toggled.connect(self.onClickedImpact)
 
         self.rb_Status_All.setChecked(True)
         self.rb_Status_Alien.setChecked(False)  # A
@@ -197,6 +200,12 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.rb_Status_Cryptogenic.setEnabled(False)  # C
         self.rb_Status_Unkhow.setEnabled(False)  # N
         self.rb_Status_Questionable.setEnabled(False)  # Q
+
+        self.rb_Status_All.toggled.connect(self.onClickedStatus)
+        self.rb_Status_Alien.toggled.connect(self.onClickedStatus)
+        self.rb_Status_Cryptogenic.toggled.connect(self.onClickedStatus)
+        self.rb_Status_Unkhow.toggled.connect(self.onClickedStatus)
+        self.rb_Status_Questionable.toggled.connect(self.onClickedStatus)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -232,6 +241,21 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.enable_filter(False)
 
+        self.cb_IsEUConcern.setCheckState(1)
+        self.cb_IsDeleted.setCheckState(1)
+        self.cb_IsParasite.setCheckState(1)
+
+        self.rb_Impact_All.setChecked(True)
+        self.rb_Impact_High.setChecked(False)
+        self.rb_Impact_Low.setChecked(False)
+
+        self.rb_Status_All.setChecked(True)
+        self.rb_Status_Alien.setChecked(False)  # A
+        self.rb_Status_Cryptogenic.setChecked(False)  # C
+        self.rb_Status_Unkhow.setChecked(False)  # N
+        self.rb_Status_Questionable.setChecked(False)  # Q
+
+
     def fetch_term(self):
         """
 
@@ -263,16 +287,21 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             QgsMessageLog.logMessage(
                 f'Error: {error}', level=Qgis.Critical)
 
-        self.searchAPI(self.data)
+        self.searchAPI(self.data, len(self.data))
 
-    def searchAPI(self, data):
+    def searchAPI(self, data, total):
 
         # data = [item for item in data_all if item['ImpactId'] == 'Hi']
         msg = 'There are no species corresponding to your search criteria'
         if data == msg:
             self.requestInfo.setText(f'{msg}')
+            return None
         else:
-            self.requestInfo.setText(f'{len(data)} results')
+
+            # print('len(data)', {len(data)})
+            print('type(data)', {type(self.data)})
+            # results = len(data)
+            self.requestInfo.setText(f'{total} results')
         # print(data)
         # print(type(data))
         try:
@@ -366,7 +395,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 data_filter = search_for(self.dict_to_search_for, self.data)
                 print('data_filter', len(data_filter))
             self.treeWidgetData.clear()
-            self.searchAPI(data_filter)
+            self.searchAPI(data_filter, len(data_filter))
 
         if control_name.text() == 'Is Deleted':
             print(control_name.text(), control_name.checkState())
@@ -389,7 +418,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 data_filter = search_for(self.dict_to_search_for, self.data)
                 print('data_filter', len(data_filter))
             self.treeWidgetData.clear()
-            self.searchAPI(data_filter)
+            self.searchAPI(data_filter, len(data_filter))
 
         if control_name.text() == 'Is Parasite':
             print(control_name.text(), control_name.checkState())
@@ -412,4 +441,81 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 data_filter = search_for(self.dict_to_search_for, self.data)
                 print('data_filter', len(data_filter))
             self.treeWidgetData.clear()
-            self.searchAPI(data_filter)
+            self.searchAPI(data_filter, len(data_filter))
+
+    def onClickedImpact(self):
+        print(self.dict_to_search_for)
+
+        radio_btn = self.sender()
+        total = 0
+
+        if radio_btn.isChecked():
+            print(radio_btn.text())
+            if radio_btn.text() == 'High':
+                item = {"ImpactId": 'Hi', }
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                self.data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(self.data_filter))
+                total = len(self.data_filter)
+            elif radio_btn.text() == 'Low/Unknown':
+                item = {"ImpactId": 'Lo', }
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                self.data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(self.data_filter))
+                total = len(self.data_filter)
+            else:
+                print(self.dict_to_search_for)
+                del self.dict_to_search_for["ImpactId"]
+                self.data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(self.data_filter))
+                total = len(self.data_filter)
+        self.treeWidgetData.clear()
+        self.searchAPI(self.data_filter, total)
+
+    def onClickedStatus(self):
+        print(self.dict_to_search_for)
+
+        radio_btn = self.sender()
+        total = 0
+
+        if radio_btn.isChecked():
+            print(radio_btn.text())
+            if radio_btn.text() == 'Alien':
+                item = {"StatusId": "A", }
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                self.data_filter = search_for(self.dict_to_search_for, self.data)
+                total = len(self.data_filter)
+                print('data_filter', len(self.data_filter))
+            elif radio_btn.text() == 'Cryptogenic':
+                item = {"StatusId": "C", }
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                self.data_filter = search_for(self.dict_to_search_for, self.data)
+                total = len(self.data_filter)
+                print('data_filter', len(self.data_filter))
+            elif radio_btn.text() == 'Questionable':
+                item = {"StatusId": "Q", }
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                self.data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(self.data_filter))
+                total = len(self.data_filter)
+            elif radio_btn.text() == 'Unkhow':
+                item = {"StatusId": "N"}
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                self.data_filter = search_for(self.dict_to_search_for, self.data)
+                total = len(self.data_filter)
+                print('data_filter', len(self.data_filter))
+            else:
+                print(self.dict_to_search_for)
+                del self.dict_to_search_for["StatusId"]
+                self.data_filter = search_for(self.dict_to_search_for, self.data)
+                total = len(self.data_filter)
+                print('data_filter', len(self.data_filter))
+        self.treeWidgetData.clear()
+
+        self.searchAPI(self.data_filter,total)
