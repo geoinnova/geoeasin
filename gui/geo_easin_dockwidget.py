@@ -24,23 +24,109 @@
 
 import json
 import os
+import re
+from functools import partial
 from urllib import request
 
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QTreeWidgetItem
-from PyQt5.QtGui import QColor, QFont
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import Qgis, QgsMessageLog, QgsVectorLayer, QgsGeometry, QgsFeature, QgsProject
 
 from ..tools.tools import replaceSpaces
 
-import re
-from functools import partial
-
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'geo_easin_dockwidget_base.ui'))
 
 PATH_ICON_ZOOM = os.path.abspath(os.path.join(os.path.dirname(__file__), 'icons') + '\zoom.png')
+
+
+def create_layer(speciesCatalogueId, speciesName=''):
+    speciesid = speciesCatalogueId
+    speciesname = speciesName
+    skip = 0
+    len_results = 1
+    data = {}
+
+    layer_name = f"{speciesid}_{speciesname}"
+
+    def fetch_data(speciesid, skip):
+
+        URL = f'https://easin.jrc.ec.europa.eu/api/geo/speciesid/{speciesid}/layertype/grid/take/50/skip/{skip}'
+        req = request.Request(URL)  # URL de solicitud (solicitud GET)
+
+        with request.urlopen(req) as f:  # Solicitud de URL abierta (como si abriera un archivo local)
+            return json.loads(f.read().decode(
+                'utf-8'))  # Lea datos y codifique mientras usa json.loads para convertir datos en formato json en objetos python
+
+    # URL + speciesid/{speciesid}/layertype/{layertype}/take/{num records to take}/skip/{num records teso skip}
+    ## cntr o grid
+
+    temp = QgsVectorLayer(
+        "Polygon?crs=epsg:3035"
+        "&field=LayerRecordId:string&index=yes"
+        "&field=SpeciesId:string"
+        "&field=SpeciesName:string"
+        "&field=YearMin:int"
+        "&field=YearMax:int"
+        "&field=Reference:string:string(400)"
+        "&field=Native:boolean"
+        "&field=DataPartner:string",
+        layer_name, "memory")
+
+    def addGrid(temp, resultados):
+
+        temp.startEditing()
+
+        for feature in resultados:
+            wkt = feature['Wkt']
+            geom = QgsGeometry()
+            geom = QgsGeometry.fromWkt(feature['Wkt'])
+            feat = QgsFeature()
+            feat.setGeometry(geom)
+
+            yearMin = feature['YearMin'].replace("    ", "0")
+            yearMax = feature['YearMax'].replace("    ", "0")
+
+            feat.setAttributes([
+                feature['LayerRecordId'],
+                feature['SpeciesId'],
+                feature['SpeciesName'],
+                int(yearMin),
+                int(yearMax),
+                feature['Reference'],
+                feature['Native'],
+                feature['DataPartner'],
+            ])
+            temp.dataProvider().addFeatures([feat])
+
+        temp.commitChanges()
+
+    while len_results > 0:
+        new_data = fetch_data(speciesid, skip)
+        print(type(new_data))
+        print(new_data)
+        skip += 50
+        resultados = new_data['results']
+        len_results = len(resultados)
+        print(len_results)
+
+        #######
+        addGrid(temp, resultados)
+
+    if temp.featureCount() > 0:
+        ## temp.renderer().symbol().setColor(QColor("red"))
+        ## temp.triggerRepaint()
+        QgsProject.instance().addMapLayer(temp)
+        ## qgis.utils.iface.setActiveLayer(temp)
+        ## qgis.utils.iface.zoomToActiveLayer()
+    else:
+        print('Sin resultados')
+
+
+def search_for(d, lst):
+    return [i for i in lst if all(i[target_key] == target_value for target_key, target_value in d.items())]
 
 
 class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
@@ -51,9 +137,15 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         super(GeoEASINDockWidget, self).__init__(parent)
         self.setupUi(self)
 
+        self.data = None
+        self.data_filter = None
+        self.list_search = [True, False, True, False, True, False]
+        self.dict_to_search_for = {}
+        self.has_data = False
+
         # Search Button
         self.btnSearch.setEnabled(False)
-        self.btnSearch.clicked.connect(self.searchAPI)
+        self.btnSearch.clicked.connect(self.fetch_term)
 
         # Clean treeData
         self.btnCleanResults.clicked.connect(self.clean_results)
@@ -65,11 +157,46 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.treeWidgetData.setColumnCount(2)
         self.treeWidgetData.setHeaderItem(QTreeWidgetItem(["Specie", ""]))
         self.treeWidgetData.setColumnWidth(0, 300)
-        # self.treeWidgetData.itemDoubleClicked.connect(self.create_layer)
-        self.treeWidgetData.itemDoubleClicked.connect(partial(self.printItem))
+        self.treeWidgetData.itemDoubleClicked.connect(partial(self.add_grid_layer))
 
         # Tab
         self.tabWidget.setCurrentIndex(0)
+
+        # CheckBox filters
+
+        self.cb_IsEUConcern.setCheckState(1)
+        self.cb_IsDeleted.setCheckState(1)
+        self.cb_IsParasite.setCheckState(1)
+
+        self.cb_IsEUConcern.setEnabled(False)
+        self.cb_IsDeleted.setEnabled(False)
+        self.cb_IsParasite.setEnabled(False)
+
+        self.cb_IsEUConcern.stateChanged.connect(lambda: self.apply_filters(self.cb_IsEUConcern))
+        self.cb_IsDeleted.stateChanged.connect(lambda: self.apply_filters(self.cb_IsDeleted))
+        self.cb_IsParasite.stateChanged.connect(lambda: self.apply_filters(self.cb_IsParasite))
+
+        # Option filters
+
+        self.rb_Impact_All.setChecked(True)
+        self.rb_Impact_High.setChecked(False)
+        self.rb_Impact_Low.setChecked(False)
+
+        self.rb_Impact_All.setEnabled(False)
+        self.rb_Impact_High.setEnabled(False)  # Hi
+        self.rb_Impact_Low.setEnabled(False)  # Lo
+
+        self.rb_Status_All.setChecked(True)
+        self.rb_Status_Alien.setChecked(False)  # A
+        self.rb_Status_Cryptogenic.setChecked(False)  # C
+        self.rb_Status_Unkhow.setChecked(False)  # N
+        self.rb_Status_Questionable.setChecked(False)  # Q
+
+        self.rb_Status_All.setEnabled(False)
+        self.rb_Status_Alien.setEnabled(False)  # A
+        self.rb_Status_Cryptogenic.setEnabled(False)  # C
+        self.rb_Status_Unkhow.setEnabled(False)  # N
+        self.rb_Status_Questionable.setEnabled(False)  # Q
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -82,20 +209,51 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         else:
             self.btnSearch.setEnabled(False)
 
-    def fetch_term(self, term):
+    def enable_filter(self, active: True):
+        self.cb_IsEUConcern.setEnabled(active)
+        self.cb_IsDeleted.setEnabled(active)
+        self.cb_IsParasite.setEnabled(active)
+        self.rb_Impact_All.setEnabled(active)
+        self.rb_Impact_High.setEnabled(active)
+        self.rb_Impact_Low.setEnabled(active)
+        self.rb_Status_All.setEnabled(active)
+        self.rb_Status_Alien.setEnabled(active)  # A
+        self.rb_Status_Cryptogenic.setEnabled(active)  # C
+        self.rb_Status_Unkhow.setEnabled(active)  # N
+        self.rb_Status_Questionable.setEnabled(active)  # N
+
+
+    def clean_results(self, value):
+        self.data = None
+        self.data_filter = None
+        self.lineSpecieText.clear()
+        self.treeWidgetData.clear()
+        self.requestInfo.setText(f'Info')
+
+        self.enable_filter(False)
+
+    def fetch_term(self):
         """
 
         @param term: the species scientific name or part of it
         @return:
         """
+
+        term = self.lineSpecieText.text()
+        term2 = re.sub('\\s+', ' ', term)
+        term3 = replaceSpaces(term2)
+
         try:
 
-            url = f'https://easin.jrc.ec.europa.eu/api/cat/term/{term}'
+            url = f'https://easin.jrc.ec.europa.eu/api/cat/term/{term3}'
             req = request.Request(url)
 
             with request.urlopen(req) as f:
                 QgsMessageLog.logMessage("oK", level=Qgis.Info)
-                return json.loads(f.read().decode('utf-8'))
+                data_json = json.loads(f.read().decode('utf-8'))
+                self.data = data_json['results']
+                print(data_json)
+                print(self.data)
 
         except Exception as error:
             print(f'Error: {error}')
@@ -105,23 +263,20 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             QgsMessageLog.logMessage(
                 f'Error: {error}', level=Qgis.Critical)
 
-    def searchAPI(self):
-        """
+        self.searchAPI(self.data)
 
-        @return:
-        """
+    def searchAPI(self, data):
 
-        term = self.lineSpecieText.text()
-        term2 = 'Procambarus  acutus '
-        term3 = re.sub('\\s+', ' ', term)
-        term_list = []
-        # print(replaceSpaces(term3))
-        resp = self.fetch_term(replaceSpaces(term3))
-        data = resp['results']
-        self.requestInfo.setText(f'{len(data)} results for {term3}')
+        # data = [item for item in data_all if item['ImpactId'] == 'Hi']
+        msg = 'There are no species corresponding to your search criteria'
+        if data == msg:
+            self.requestInfo.setText(f'{msg}')
+        else:
+            self.requestInfo.setText(f'{len(data)} results')
         # print(data)
         # print(type(data))
         try:
+            self.enable_filter(True)
             for dataLevel0 in data:
                 speciesName = dataLevel0['SpeciesName']
                 speciesCatalogueId = dataLevel0['SpeciesCatalogueId']
@@ -172,105 +327,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         except:
             print('error')
 
-    def clean_results(self, value):
-        self.treeWidgetData.clear()
-        self.requestInfo.setText(f'Info')
-
-    def create_layer1(self, name_layer, gridID):
-        print('Crea capa')
-        layer_name = f"{name_layer}_{gridID}"
-
-    def create_layer(self,speciesCatalogueId, speciesName=''):
-
-        speciesid = speciesCatalogueId
-        speciesname = speciesName
-        skip = 0
-        len_results = 1
-        data = {}
-
-        layer_name = f"{speciesid}_{speciesname}"
-
-        def fetch_data(speciesid, skip):
-
-            URL = f'https://easin.jrc.ec.europa.eu/api/geo/speciesid/{speciesid}/layertype/grid/take/50/skip/{skip}'
-            req = request.Request(URL)  # URL de solicitud (solicitud GET)
-
-            with request.urlopen(req) as f:  # Solicitud de URL abierta (como si abriera un archivo local)
-                return json.loads(f.read().decode(
-                    'utf-8'))  # Lea datos y codifique mientras usa json.loads para convertir datos en formato json en objetos python
-
-        # URL + speciesid/{speciesid}/layertype/{layertype}/take/{num records to take}/skip/{num records teso skip}
-        ## cntr o grid
-
-        temp = QgsVectorLayer(
-            "Polygon?crs=epsg:3035"
-            "&field=LayerRecordId:string&index=yes"
-            "&field=SpeciesId:string"
-            "&field=SpeciesName:string"
-            "&field=YearMin:int"
-            "&field=YearMax:int"
-            "&field=Reference:string:string(400)"
-            "&field=Native:boolean"
-            "&field=DataPartner:string",
-            layer_name, "memory")
-
-        def addGrid(temp, resultados):
-
-            temp.startEditing()
-
-            for feature in resultados:
-                wkt = feature['Wkt']
-                geom = QgsGeometry()
-                geom = QgsGeometry.fromWkt(feature['Wkt'])
-                feat = QgsFeature()
-                feat.setGeometry(geom)
-
-                yearMin = feature['YearMin'].replace("    ", "0")
-                yearMax = feature['YearMax'].replace("    ", "0")
-
-                feat.setAttributes([
-                    feature['LayerRecordId'],
-                    feature['SpeciesId'],
-                    feature['SpeciesName'],
-                    int(yearMin),
-                    int(yearMax),
-                    feature['Reference'],
-                    feature['Native'],
-                    feature['DataPartner'],
-                ])
-                temp.dataProvider().addFeatures([feat])
-
-            temp.commitChanges()
-
-        while len_results > 0:
-            new_data = fetch_data(speciesid, skip)
-            print(type(new_data))
-            print(new_data)
-            skip += 50
-            resultados = new_data['results']
-            len_results = len(resultados)
-            print(len_results)
-
-            #######
-            addGrid(temp, resultados)
-
-        if temp.featureCount() > 0:
-            ## temp.renderer().symbol().setColor(QColor("red"))
-            ## temp.triggerRepaint()
-            QgsProject.instance().addMapLayer(temp)
-            ## qgis.utils.iface.setActiveLayer(temp)
-            ## qgis.utils.iface.zoomToActiveLayer()
-        else:
-            print('Sin resultados')
-
-
-    def item_icon(self, key, value_id, QTW):
-        icon_item = QTreeWidgetItem(QTW, 1)
-        icon_item.setText(1, key + "(" + str(value_id) + ")")
-        icon_item.setText(0, "ZOOM")
-        icon_item.setIcon(0, QtGui.QIcon(QtGui.QPixmap(path_icon_zoom)))
-
-    def printItem(self, treeitem, item):
+    def add_grid_layer(self, treeitem, item):
         print(treeitem)
         print(item)
         getSelected = self.treeWidgetData.selectedItems()
@@ -282,6 +339,77 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             if "Add grid" in getChildNode:
                 name_layer = baseNode.text(0)
                 id = baseNode.text(1).split(":")[1].strip()
-                self.create_layer( id, name_layer)
+                create_layer(id, name_layer)
 
+    def apply_filters(self, control_name):
 
+        print(self.dict_to_search_for)
+
+        if control_name.text() == 'Is EU concern':
+            print(control_name.text(), control_name.checkState())
+            if control_name.checkState() == 2:
+                item = {"IsEuConcern": True, }
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(data_filter))
+            elif control_name.checkState() == 0:
+                item = {"IsEuConcern": False, }
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(data_filter))
+            else:
+                # self.dict_to_search_for.pop("IsEuConcern")
+                print(self.dict_to_search_for)
+                del self.dict_to_search_for["IsEuConcern"]
+                data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(data_filter))
+            self.treeWidgetData.clear()
+            self.searchAPI(data_filter)
+
+        if control_name.text() == 'Is Deleted':
+            print(control_name.text(), control_name.checkState())
+            if control_name.checkState() == 2:
+                item = {"IsDeleted": True, }
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(data_filter))
+            elif control_name.checkState() == 0:
+                item = {"IsDeleted": False, }
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(data_filter))
+            else:
+                # self.dict_to_search_for.pop("IsEuConcern")
+                print(self.dict_to_search_for)
+                del self.dict_to_search_for["IsDeleted"]
+                data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(data_filter))
+            self.treeWidgetData.clear()
+            self.searchAPI(data_filter)
+
+        if control_name.text() == 'Is Parasite':
+            print(control_name.text(), control_name.checkState())
+            if control_name.checkState() == 2:
+                item = {"IsParasite": True, }
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(data_filter))
+            elif control_name.checkState() == 0:
+                item = {"IsParasite": False, }
+                self.dict_to_search_for.update(item)
+                print(self.dict_to_search_for)
+                data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(data_filter))
+            else:
+                # self.dict_to_search_for.pop("IsEuConcern")
+                print(self.dict_to_search_for)
+                del self.dict_to_search_for["IsParasite"]
+                data_filter = search_for(self.dict_to_search_for, self.data)
+                print('data_filter', len(data_filter))
+            self.treeWidgetData.clear()
+            self.searchAPI(data_filter)
