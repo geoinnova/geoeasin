@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>432</width>
-    <height>326</height>
+    <width>407</width>
+    <height>360</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,36 +15,65 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="1">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QLabel" name="lblLogo">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>35</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>logo</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="maximumSize">
+        <size>
+         <width>107</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Droid Sans'; font-size:16pt; font-weight:600;&quot;&gt;GeoEASIN&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item row="0" column="0">
-    <widget class="QLabel" name="lblLogo">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="text">
-      <string>logo</string>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
      </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-     </property>
-    </widget>
+    </spacer>
    </item>
-   <item row="2" column="0" colspan="2">
+   <item row="2" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -54,7 +83,20 @@ p, li { white-space: pre-wrap; }
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2">
+   <item row="0" column="2">
+    <spacer name="horizontalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="1" column="0" colspan="3">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -66,8 +108,8 @@ p, li { white-space: pre-wrap; }
       <attribute name="title">
        <string>Info</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0" colspan="2">
         <widget class="QTextBrowser" name="tbInfo">
          <property name="readOnly">
           <bool>true</bool>

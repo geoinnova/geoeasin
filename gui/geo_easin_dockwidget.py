@@ -70,7 +70,7 @@ def create_layer(speciesCatalogueId, speciesName=''):
         "&field=SpeciesName:string"
         "&field=YearMin:int"
         "&field=YearMax:int"
-        "&field=Reference:string:string(400)"
+        "&field=Reference:string(400)"
         "&field=Native:boolean"
         "&field=DataPartner:string",
         layer_name, "memory")
@@ -105,15 +105,12 @@ def create_layer(speciesCatalogueId, speciesName=''):
 
     while len_results > 0:
         new_data = fetch_data(speciesid, skip)
-        print(type(new_data))
-        print(new_data)
-        skip += 50
-        resultados = new_data['results']
-        len_results = len(resultados)
-        print(len_results)
 
-        #######
-        addGrid(temp, resultados)
+        skip += 50
+        results = new_data['results']
+        len_results = len(results)
+
+        addGrid(temp, results)
 
     if temp.featureCount() > 0:
         ## temp.renderer().symbol().setColor(QColor("red"))
@@ -122,7 +119,7 @@ def create_layer(speciesCatalogueId, speciesName=''):
         ## qgis.utils.iface.setActiveLayer(temp)
         ## qgis.utils.iface.zoomToActiveLayer()
     else:
-        print('Sin resultados')
+        print('No results')
 
 
 def search_for(d, lst):
@@ -141,12 +138,13 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.data_filter = None
         self.dict_to_search_for = {}
 
+        #  search DOCK WIDGETS
 
         # Search Button
         self.btnSearch.setEnabled(False)
-        self.btnSearch.clicked.connect(self.fetch_term)
+        self.btnSearch.clicked.connect(self.fetch_specie)
 
-        # Clean treeData
+        # Clean Button
         self.btnCleanResults.clicked.connect(self.clean_results)
 
         # Search text
@@ -162,7 +160,6 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.tabWidget.setCurrentIndex(0)
 
         # CheckBox filters
-
         self.cb_IsEUConcern.setCheckState(1)
         self.cb_IsDeleted.setCheckState(1)
         self.cb_IsParasite.setCheckState(1)
@@ -175,8 +172,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.cb_IsDeleted.stateChanged.connect(lambda: self.apply_filters(self.cb_IsDeleted))
         self.cb_IsParasite.stateChanged.connect(lambda: self.apply_filters(self.cb_IsParasite))
 
-        # Option filters https://www.delftstack.com/es/tutorial/pyqt5/pyqt5-radiobutton/
-
+        # Radiobutton filters
         self.rb_Impact_All.setChecked(True)
         self.rb_Impact_High.setChecked(False)
         self.rb_Impact_Low.setChecked(False)
@@ -212,13 +208,18 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         event.accept()
 
     def enable_button(self):
-        textLength = len(self.lineSpecieText.text())
-        if textLength > 3:
+        text_length = len(self.lineSpecieText.text())
+        if text_length > 3:
             self.btnSearch.setEnabled(True)
         else:
             self.btnSearch.setEnabled(False)
 
     def enable_filter(self, active: True):
+        '''
+        Manage the checkboxes and the radio buttons state
+        @param active:
+        @return:
+        '''
         self.cb_IsEUConcern.setEnabled(active)
         self.cb_IsDeleted.setEnabled(active)
         self.cb_IsParasite.setEnabled(active)
@@ -231,12 +232,17 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.rb_Status_Unkhow.setEnabled(active)  # N
         self.rb_Status_Questionable.setEnabled(active)  # N
 
-
-    def clean_results(self, value):
+    def clean_results(self):
+        '''
+        Clean the research results, reset the the default widgets values and initialize the main variables
+        @return:
+        '''
         self.data = None
         self.data_filter = None
-        self.lineSpecieText.clear()
+
+        # self.lineSpecieText.clear()
         self.treeWidgetData.clear()
+
         self.requestInfo.setText(f'Info')
 
         self.enable_filter(False)
@@ -255,13 +261,13 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.rb_Status_Unkhow.setChecked(False)  # N
         self.rb_Status_Questionable.setChecked(False)  # Q
 
-
-    def fetch_term(self):
+    def fetch_specie(self):
         """
 
         @param term: the species scientific name or part of it
         @return:
         """
+        self.clean_results()
 
         term = self.lineSpecieText.text()
         term2 = re.sub('\\s+', ' ', term)
@@ -276,18 +282,15 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 QgsMessageLog.logMessage("oK", level=Qgis.Info)
                 data_json = json.loads(f.read().decode('utf-8'))
                 self.data = data_json['results']
-                print(data_json)
-                print(self.data)
+                self.searchAPI(self.data, len(self.data))
 
         except Exception as error:
             print(f'Error: {error}')
-            self.requestInfo.setText("Error. Fallo de conexión")
+            self.requestInfo.setText("Connection error")
             # 2 - QgsMessageLog
             # QgsMessageLog.logMessage(error, level=Qgis.Critical)
             QgsMessageLog.logMessage(
                 f'Error: {error}', level=Qgis.Critical)
-
-        self.searchAPI(self.data, len(self.data))
 
     def searchAPI(self, data, total):
 
@@ -297,13 +300,8 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.requestInfo.setText(f'{msg}')
             return None
         else:
-
-            # print('len(data)', {len(data)})
-            print('type(data)', {type(self.data)})
-            # results = len(data)
             self.requestInfo.setText(f'{total} results')
-        # print(data)
-        # print(type(data))
+
         try:
             self.enable_filter(True)
             for dataLevel0 in data:
@@ -351,171 +349,148 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
                         item_level_1 = QTreeWidgetItem(item_level0, [key_level_1, str(value_level_1)])
                         self.treeWidgetData.addTopLevelItem(item_level_1)
-
-
         except:
-            print('error')
+            print('Error')
 
     def add_grid_layer(self, treeitem, item):
-        print(treeitem)
-        print(item)
-        getSelected = self.treeWidgetData.selectedItems()
 
-        if getSelected:
-            baseNode = getSelected[0]
-            getChildNode = baseNode.text(item)
+        get_selected = self.treeWidgetData.selectedItems()
+
+        if get_selected:
+            base_node = get_selected[0]
+            getChildNode = base_node.text(item)
 
             if "Add grid" in getChildNode:
-                name_layer = baseNode.text(0)
-                id = baseNode.text(1).split(":")[1].strip()
+                name_layer = base_node.text(0)
+                id = base_node.text(1).split(":")[1].strip()
                 create_layer(id, name_layer)
 
     def apply_filters(self, control_name):
 
-        print(self.dict_to_search_for)
-
         if control_name.text() == 'Is EU concern':
-            print(control_name.text(), control_name.checkState())
             if control_name.checkState() == 2:
                 item = {"IsEuConcern": True, }
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
                 data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(data_filter))
             elif control_name.checkState() == 0:
                 item = {"IsEuConcern": False, }
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
                 data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(data_filter))
             else:
-                # self.dict_to_search_for.pop("IsEuConcern")
-                print(self.dict_to_search_for)
                 del self.dict_to_search_for["IsEuConcern"]
                 data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(data_filter))
+
             self.treeWidgetData.clear()
             self.searchAPI(data_filter, len(data_filter))
 
         if control_name.text() == 'Is Deleted':
-            print(control_name.text(), control_name.checkState())
+
             if control_name.checkState() == 2:
                 item = {"IsDeleted": True, }
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
                 data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(data_filter))
+
             elif control_name.checkState() == 0:
                 item = {"IsDeleted": False, }
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
                 data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(data_filter))
+
             else:
-                # self.dict_to_search_for.pop("IsEuConcern")
-                print(self.dict_to_search_for)
                 del self.dict_to_search_for["IsDeleted"]
                 data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(data_filter))
+
             self.treeWidgetData.clear()
             self.searchAPI(data_filter, len(data_filter))
 
         if control_name.text() == 'Is Parasite':
-            print(control_name.text(), control_name.checkState())
+
             if control_name.checkState() == 2:
                 item = {"IsParasite": True, }
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
                 data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(data_filter))
             elif control_name.checkState() == 0:
                 item = {"IsParasite": False, }
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
                 data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(data_filter))
+
             else:
-                # self.dict_to_search_for.pop("IsEuConcern")
-                print(self.dict_to_search_for)
                 del self.dict_to_search_for["IsParasite"]
                 data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(data_filter))
+
             self.treeWidgetData.clear()
             self.searchAPI(data_filter, len(data_filter))
 
     def onClickedImpact(self):
-        print(self.dict_to_search_for)
 
         radio_btn = self.sender()
         total = 0
 
         if radio_btn.isChecked():
-            print(radio_btn.text())
+
             if radio_btn.text() == 'High':
                 item = {"ImpactId": 'Hi', }
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
+
                 self.data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(self.data_filter))
+
                 total = len(self.data_filter)
             elif radio_btn.text() == 'Low/Unknown':
                 item = {"ImpactId": 'Lo', }
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
+
                 self.data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(self.data_filter))
+
                 total = len(self.data_filter)
             else:
-                print(self.dict_to_search_for)
+
                 del self.dict_to_search_for["ImpactId"]
                 self.data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(self.data_filter))
+
                 total = len(self.data_filter)
         self.treeWidgetData.clear()
         self.searchAPI(self.data_filter, total)
 
     def onClickedStatus(self):
-        print(self.dict_to_search_for)
 
         radio_btn = self.sender()
         total = 0
 
         if radio_btn.isChecked():
-            print(radio_btn.text())
+
             if radio_btn.text() == 'Alien':
                 item = {"StatusId": "A", }
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
+
                 self.data_filter = search_for(self.dict_to_search_for, self.data)
                 total = len(self.data_filter)
-                print('data_filter', len(self.data_filter))
+
             elif radio_btn.text() == 'Cryptogenic':
                 item = {"StatusId": "C", }
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
+
                 self.data_filter = search_for(self.dict_to_search_for, self.data)
                 total = len(self.data_filter)
-                print('data_filter', len(self.data_filter))
+
             elif radio_btn.text() == 'Questionable':
                 item = {"StatusId": "Q", }
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
+
                 self.data_filter = search_for(self.dict_to_search_for, self.data)
-                print('data_filter', len(self.data_filter))
+
                 total = len(self.data_filter)
             elif radio_btn.text() == 'Unkhow':
                 item = {"StatusId": "N"}
                 self.dict_to_search_for.update(item)
-                print(self.dict_to_search_for)
+
                 self.data_filter = search_for(self.dict_to_search_for, self.data)
                 total = len(self.data_filter)
-                print('data_filter', len(self.data_filter))
+
             else:
-                print(self.dict_to_search_for)
+
                 del self.dict_to_search_for["StatusId"]
                 self.data_filter = search_for(self.dict_to_search_for, self.data)
                 total = len(self.data_filter)
-                print('data_filter', len(self.data_filter))
+
         self.treeWidgetData.clear()
 
-        self.searchAPI(self.data_filter,total)
+        self.searchAPI(self.data_filter, total)

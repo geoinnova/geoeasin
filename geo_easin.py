@@ -10,7 +10,6 @@ from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 from qgis.core import QgsApplication
-from qgis.core import QgsRasterLayer, QgsVectorLayer, QgsProject
 
 from .gui.about_dialog import AboutDialog
 from .gui.geo_easin_dockwidget import GeoEASINDockWidget
@@ -169,8 +168,6 @@ class GeoEASIN:
 
         self.initProcessing()
 
-        print('__initGui_')
-
     def unload(self):
         # remove the plugin menu item and icon
         for action in self.actions:
@@ -203,8 +200,6 @@ class GeoEASIN:
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
-
-            # print "** STARTING GeoEASIN"
 
             # dockwidget may not exist if:
             #    first run of plugin
