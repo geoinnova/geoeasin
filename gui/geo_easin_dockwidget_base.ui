@@ -206,16 +206,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tabLog">
-       <attribute name="title">
-        <string>Log</string>
-       </attribute>
-       <layout class="QGridLayout" name="gridLayout">
-        <item row="0" column="0">
-         <widget class="QTextBrowser" name="logInfoText"/>
-        </item>
-       </layout>
-      </widget>
      </widget>
     </item>
    </layout>
