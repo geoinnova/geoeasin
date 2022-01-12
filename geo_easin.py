@@ -86,9 +86,9 @@ class GeoEASIN:
     def initGui(self):
         # create action that will start plugin configuration
 
-        icon_search = self.plugin_dir + '/img/bug.svg'
-        icon_about = self.plugin_dir + '/img/about.svg'
-        icon_map = self.plugin_dir + '/img/map.svg'
+        icon_search = self.plugin_dir + '/img/geoeasinicon.png'
+        icon_about = self.plugin_dir + '/img/infoicon.png'
+        icon_map = self.plugin_dir + '/img/basemapicon.png'
 
         self.action_search_specie = self.add_action("&Search by specie",
                                                     self.open_dock_search,
@@ -104,19 +104,19 @@ class GeoEASIN:
 
         self.action_addOSM = self.add_action("OpenStreetMap",
                                              basemaps.addTileLayer,
-                                             icon_about)
+                                             icon_map)
         self.action_addWMSCopernicusRiverBasin = self.add_action("Copernicus River Basine",
                                                                  basemaps.addWMSCopernicusRiver,
-                                                                 icon_about)
+                                                                 icon_map)
         self.action_addWMSCopernicusCLC2018 = self.add_action("Corine Land Cover 2018",
                                                               basemaps.addWMSCopernicusCLC2018,
-                                                              icon_about)
+                                                              icon_map)
         self.action_addWMSCopernicusNatura2000 = self.add_action("Natura2000/N2K_2018",
                                                                  basemaps.addWMSCopernicusNatura2000N2k2018,
-                                                                 icon_about)
+                                                                 icon_map)
         self.action_addCountriesLayer = self.add_action("Countries (Natural Earth)",
                                                         basemaps.addCountriesLayer,
-                                                        icon_about)
+                                                        icon_map)
 
         # add toolbar button and menu item
         self.iface.addToolBarIcon(self.action_search_specie)
@@ -162,6 +162,7 @@ class GeoEASIN:
         self.submenu_basemaps.addAction(self.action_addWMSCopernicusRiverBasin)
         self.submenu_basemaps.addAction(self.action_addWMSCopernicusCLC2018)
         self.submenu_basemaps.addAction(self.action_addWMSCopernicusNatura2000)
+        self.submenu_basemaps_separator = self.submenu_basemaps.addSeparator()
         self.submenu_basemaps.addAction(self.action_addCountriesLayer)
 
         #  Action about
