@@ -29,7 +29,7 @@ from datetime import datetime
 from functools import partial
 from urllib import request
 
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QFont
 from PyQt5.QtWidgets import QTreeWidgetItem
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
@@ -169,7 +169,6 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         @return:
         '''
 
-        print('clean_results')
         self.data = None
         self.data_filter = None
         self.total = 0
@@ -256,8 +255,15 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             for dataLevel0 in data:
                 speciesName = dataLevel0['SpeciesName']
                 speciesCatalogueId = dataLevel0['SpeciesCatalogueId']
-                item_level0 = QTreeWidgetItem(self.treeWidgetData, [speciesName, 'Add grid: ' + speciesCatalogueId, ''])
-                item_level0.setForeground(0, QColor("blue"))
+                item_level0 = QTreeWidgetItem(self.treeWidgetData,
+                                              [speciesName, 'Add grid to map: ' + speciesCatalogueId, ''])
+                font = QFont()
+                font.setBold(True)
+                item_level0.setFont(0, font)
+                item_level0.setForeground(1, QColor("blue"))
+                item_level0.setToolTip(1, 'Double click to add')
+
+                print(item_level0)
                 self.treeWidgetData.addTopLevelItem(item_level0)
 
                 for dataLevel1 in dataLevel0.items():
@@ -295,10 +301,10 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         if get_selected:
             base_node = get_selected[0]
             getChildNode = base_node.text(item)
-            if "Add grid" in getChildNode:
+            if "Add grid to map" in getChildNode:
                 name_layer = base_node.text(0)
                 id = base_node.text(1).split(":")[1].strip()
-            self.create_layer(id, name_layer)
+                self.create_layer(id, name_layer)
 
     def apply_filters(self, control_name):
 
