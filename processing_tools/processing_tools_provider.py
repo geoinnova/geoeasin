@@ -1,15 +1,25 @@
-from qgis.core import QgsProcessingProvider
-
-from PyQt5.QtGui import QIcon
 from os import path
 
-from .union import UnirInformacionPas
+from PyQt5.QtGui import QIcon
+from qgis.core import QgsProcessingProvider
+
+from .distribuition_analysis import *
 
 
 class ProcessingToolsProvider(QgsProcessingProvider):
 
     def loadAlgorithms(self, *args, **kwargs):
-        self.addAlgorithm(UnirInformacionPas())
+        self.addAlgorithm(DissolveDistributionArea())
+        self.addAlgorithm(HydroNetwork())
+        self.addAlgorithm(HydroNetworkDispersion())
+        self.addAlgorithm(AlienSpeciesHydroNetworkMonitoring())
+        self.addAlgorithm(CreateANewGrid())
+        self.addAlgorithm(CreateGridOverlayDistribution())
+        self.addAlgorithm(Range())
+        self.addAlgorithm(RangeUsingGridDimension())
+        self.addAlgorithm(RangeUsingIneffectiveAreas())
+        self.addAlgorithm(EnvironmentStatistics())
+        self.addAlgorithm(WatershedDispersion())
 
     def id(self, *args, **kwargs):
         """The ID of your plugin, used for identifying the provider.
@@ -28,4 +38,4 @@ class ProcessingToolsProvider(QgsProcessingProvider):
         """Should return a QIcon which is used for your provider inside
         the Processing toolbox.
         """
-        return QIcon(path.dirname(__file__) + '/img/bug.svg')
+        return QIcon(path.dirname(__file__) + '/img/geoeasinicon.png')
