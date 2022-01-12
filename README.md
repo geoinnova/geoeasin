@@ -9,7 +9,7 @@ Services</a>
 
 ## Usage
 
-See the [documentation](./wiki).
+See the [documentation](https://github.com/geoinnova/geoeasin/wiki).
 
 ## Bugs and request
 
