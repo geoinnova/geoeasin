@@ -1,5 +1,9 @@
 import os
+
 from qgis.core import QgsRasterLayer, QgsVectorLayer, QgsProject
+
+UPPATH = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
+CURR_PATH = UPPATH(__file__, 2)
 
 
 def addTileLayer():
@@ -61,15 +65,13 @@ def addWMSCopernicusNatura2000N2k2018():
         print('invalid layer')
 
 
-def addVectorLayer():
+def addCountriesLayer():
     # get the path to the shapefile e.g. /home/project/data/ports.shp
     plugin_dir = os.path.dirname(__file__)
 
     layer = "data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp"
 
-    path_layer = os.path.join(plugin_dir, layer)
-
-    print(path_layer)
+    path_layer = os.path.join(CURR_PATH, layer)
 
     virtual_layer = QgsVectorLayer(path_layer, "ne_10m_admin_0_countries", "ogr")
     if not virtual_layer.isValid():

@@ -12,7 +12,7 @@ from qgis.PyQt.QtWidgets import QAction
 from qgis.core import QgsApplication
 
 from .gui.about_dialog import AboutDialog
-from .gui.geo_easin_dockwidget import GeoEASINDockWidget
+from .gui.species_search_dockwidget import GeoEASINDockWidget
 from .processing_tools.processing_tools_provider import ProcessingToolsProvider
 from .tools import basemaps
 
@@ -73,7 +73,6 @@ class GeoEASIN:
         action.triggered.connect(callback)
         # action.triggered.connect( lambda param1: callback(param1))
 
-
         if status_tip is not None:
             action.setStatusTip(status_tip)
 
@@ -87,11 +86,9 @@ class GeoEASIN:
     def initGui(self):
         # create action that will start plugin configuration
 
-        icon_search = self.plugin_dir + '/img/bug.svg'
-        icon2 = self.plugin_dir + '/img/bola-de-disco.svg'
-        icon_about = self.plugin_dir + '/img/about.svg'
-        icon_map = self.plugin_dir + '/img/map.svg'
-        icon5 = self.plugin_dir + '/img/anadir.svg'
+        icon_search = self.plugin_dir + '/img/geoeasinicon.png'
+        icon_about = self.plugin_dir + '/img/infoicon.png'
+        icon_map = self.plugin_dir + '/img/basemapicon.png'
 
         self.action_search_specie = self.add_action("&Search by specie",
                                                     self.open_dock_search,
@@ -107,16 +104,19 @@ class GeoEASIN:
 
         self.action_addOSM = self.add_action("OpenStreetMap",
                                              basemaps.addTileLayer,
-                                             icon_about)
+                                             icon_map)
         self.action_addWMSCopernicusRiverBasin = self.add_action("Copernicus River Basine",
                                                                  basemaps.addWMSCopernicusRiver,
-                                                                 icon_about)
+                                                                 icon_map)
         self.action_addWMSCopernicusCLC2018 = self.add_action("Corine Land Cover 2018",
                                                               basemaps.addWMSCopernicusCLC2018,
-                                                              icon_about)
+                                                              icon_map)
         self.action_addWMSCopernicusNatura2000 = self.add_action("Natura2000/N2K_2018",
                                                                  basemaps.addWMSCopernicusNatura2000N2k2018,
-                                                                 icon_about)
+                                                                 icon_map)
+        self.action_addCountriesLayer = self.add_action("Countries (Natural Earth)",
+                                                        basemaps.addCountriesLayer,
+                                                        icon_map)
 
         # add toolbar button and menu item
         self.iface.addToolBarIcon(self.action_search_specie)
@@ -147,12 +147,12 @@ class GeoEASIN:
         # check if there is a sub-menu Add Base Maps
         for childchild in self.main_menu.children():
             if isinstance(childchild, QMenu):
-                if childchild.title() == "&Add base maps":  # Put here your menu name
+                if childchild.title() == "Add &base maps/layers":  # Put here your menu name
                     self.submenu_basemaps = childchild
 
         # Submenu Base Maps
         if not self.submenu_basemaps:
-            self.submenu_basemaps = QMenu(QCoreApplication.translate("GeoEASIN", "Add Base &Maps"))
+            self.submenu_basemaps = QMenu(QCoreApplication.translate("GeoEASIN", "Add &base maps/layers"))
             self.submenu_basemaps.setIcon(QIcon(icon_map))
             self.main_menu.addMenu(self.submenu_basemaps)
             # self.submenu_basemaps_separator = self.main_menu.addSeparator()
@@ -162,6 +162,8 @@ class GeoEASIN:
         self.submenu_basemaps.addAction(self.action_addWMSCopernicusRiverBasin)
         self.submenu_basemaps.addAction(self.action_addWMSCopernicusCLC2018)
         self.submenu_basemaps.addAction(self.action_addWMSCopernicusNatura2000)
+        self.submenu_basemaps_separator = self.submenu_basemaps.addSeparator()
+        self.submenu_basemaps.addAction(self.action_addCountriesLayer)
 
         #  Action about
         self.main_menu.addAction(self.action_about)
