@@ -5,11 +5,9 @@
 
 import os
 
-from ..tools.tools import getPath
-
+from qgis.PyQt import QtWidgets
 from qgis.PyQt import uic
 from qgis.PyQt.QtGui import QPixmap
-from qgis.PyQt import QtWidgets
 
 # This loads your .ui file so that PyQt can populate your plugin with the elements from Qt Designer
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -18,13 +16,13 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 UPPATH = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 CURR_PATH = UPPATH(__file__, 2)
 
+
 class AboutDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def __init__(self, parent=None):
         """Constructor."""
         super(AboutDialog, self).__init__(parent)
         self.setupUi(self)
-
 
         self.logo = QPixmap(os.path.join(CURR_PATH, 'img/bug.svg'))
         self.logo = self.logo.scaledToWidth(30)
@@ -40,9 +38,6 @@ class AboutDialog(QtWidgets.QDialog, FORM_CLASS):
             '<p><strong>Issue tracker:</strong> <a href="https://github.com/geoinnova/geoeasin/issues">GitHub</a></p>'
             '<p><strong>Source code:</strong> <a href="https://github.com/geoinnova/geoeasin">GitHub</a></p>')
 
-
-
     def get_license_text(self):
-
         with open(os.path.join(CURR_PATH, 'LICENSE')) as f:
             return f.read()

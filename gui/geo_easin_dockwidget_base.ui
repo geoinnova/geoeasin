@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tabSearch">
        <attribute name="title">
@@ -201,6 +201,20 @@
          <widget class="QPushButton" name="btnCleanResults">
           <property name="text">
            <string>Clean</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="tabLog">
+       <attribute name="title">
+        <string>Log</string>
+       </attribute>
+       <layout class="QFormLayout" name="formLayout">
+        <item row="0" column="0" colspan="2">
+         <widget class="QPlainTextEdit" name="logText">
+          <property name="readOnly">
+           <bool>true</bool>
           </property>
          </widget>
         </item>

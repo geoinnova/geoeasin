@@ -25,6 +25,7 @@
 import json
 import os
 import re
+from datetime import datetime
 from functools import partial
 from urllib import request
 
@@ -39,86 +40,9 @@ from ..tools.tools import replaceSpaces
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'geo_easin_dockwidget_base.ui'))
 
-PATH_ICON_ZOOM = os.path.abspath(os.path.join(os.path.dirname(__file__), 'icons') + '\zoom.png')
+PATH_ICON_ZOOM = os.path.abspath(os.path.join(os.path.dirname(__file__), 'log') + '\log.log')
 
-
-def create_layer(speciesCatalogueId, speciesName=''):
-    speciesid = speciesCatalogueId
-    speciesname = speciesName
-    skip = 0
-    len_results = 1
-    data = {}
-
-    layer_name = f"{speciesid}_{speciesname}"
-
-    def fetch_data(speciesid, skip):
-
-        URL = f'https://easin.jrc.ec.europa.eu/api/geo/speciesid/{speciesid}/layertype/grid/take/50/skip/{skip}'
-        req = request.Request(URL)  # URL de solicitud (solicitud GET)
-
-        with request.urlopen(req) as f:  # Solicitud de URL abierta (como si abriera un archivo local)
-            return json.loads(f.read().decode(
-                'utf-8'))  # Lea datos y codifique mientras usa json.loads para convertir datos en formato json en objetos python
-
-    # URL + speciesid/{speciesid}/layertype/{layertype}/take/{num records to take}/skip/{num records teso skip}
-    ## cntr o grid
-
-    temp = QgsVectorLayer(
-        "Polygon?crs=epsg:3035"
-        "&field=LayerRecordId:string&index=yes"
-        "&field=SpeciesId:string"
-        "&field=SpeciesName:string"
-        "&field=YearMin:int"
-        "&field=YearMax:int"
-        "&field=Reference:string(400)"
-        "&field=Native:boolean"
-        "&field=DataPartner:string",
-        layer_name, "memory")
-
-    def addGrid(temp, apidata):
-
-        temp.startEditing()
-
-        for feature in apidata:
-            wkt = feature['Wkt']
-            geom = QgsGeometry()
-            geom = QgsGeometry.fromWkt(feature['Wkt'])
-            feat = QgsFeature()
-            feat.setGeometry(geom)
-
-            year_min = feature['YearMin'].replace("    ", "0")
-            year_max = feature['YearMax'].replace("    ", "0")
-
-            feat.setAttributes([
-                feature['LayerRecordId'],
-                feature['SpeciesId'],
-                feature['SpeciesName'],
-                int(year_min),
-                int(year_max),
-                feature['Reference'],
-                feature['Native'],
-                feature['DataPartner'],
-            ])
-            temp.dataProvider().addFeatures([feat])
-
-        temp.commitChanges()
-
-    while len_results > 0:
-        new_data = fetch_data(speciesid, skip)
-        skip += 50
-        results = new_data['results']
-        len_results = len(results)
-
-        addGrid(temp, results)
-
-    if temp.featureCount() > 0:
-        ## temp.renderer().symbol().setColor(QColor("red"))
-        ## temp.triggerRepaint()
-        QgsProject.instance().addMapLayer(temp)
-        ## qgis.utils.iface.setActiveLayer(temp)
-        ## qgis.utils.iface.zoomToActiveLayer()
-    else:
-        print('No results')
+UPPATH = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 
 
 def search_for(d, lst):
@@ -202,6 +126,13 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.rb_Status_Unkhow.toggled.connect(self.onClickedStatus)
         self.rb_Status_Questionable.toggled.connect(self.onClickedStatus)
 
+        formatter = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        logfilename = r'E:\DESARROLLOS\plugins_qgis\geoeasin\example.log'
+
+        if os.path.isfile(logfilename):
+            with open(logfilename, 'w') as file:
+                pass
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
@@ -271,10 +202,13 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         term = self.lineSpecieText.text()
         term2 = re.sub('\\s+', ' ', term)
         term3 = replaceSpaces(term2)
+        self.url = None
+
+        self.logText.appendPlainText(datetime.now().strftime("%Y/%m/%d, %H:%M:%S"))
 
         try:
-            url = f'https://easin.jrc.ec.europa.eu/api/cat/term/{term3}'
-            req = request.Request(url)
+            self.url = f'https://easin.jrc.ec.europa.eu/api/cat/term/{term3}'
+            req = request.Request(self.url)
 
             with request.urlopen(req) as f:
                 QgsMessageLog.logMessage("oK", level=Qgis.Info)
@@ -285,6 +219,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         except Exception as error:
             print(f'Error: {error}')
             self.requestInfo.setText("Connection error")
+            self.logText.appendPlainText("Connection error")
             # 2 - QgsMessageLog
             # QgsMessageLog.logMessage(error, level=Qgis.Critical)
             QgsMessageLog.logMessage(
@@ -295,9 +230,16 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         msg = 'There are no species corresponding to your search criteria'
         if data == msg:
             self.requestInfo.setText(f'{msg}')
+            self.logText.appendPlainText(f'- Term of search: {self.lineSpecieText.text()} ')
+            self.logText.appendPlainText(f'- API URL: {self.url} ')
+            self.logText.appendPlainText(f'{msg}')
+
             return None
         else:
-            self.requestInfo.setText(f'{total} results')
+            self.requestInfo.setText(f'Total results {total}')
+            self.logText.appendPlainText(f'- Term of search: {self.lineSpecieText.text()} ')
+            self.logText.appendPlainText(f'- API URL: {self.url} ')
+            self.logText.appendPlainText(f'- Total results {total}')
 
         try:
             self.enable_filter(True)
@@ -345,7 +287,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             if "Add grid" in getChildNode:
                 name_layer = base_node.text(0)
                 id = base_node.text(1).split(":")[1].strip()
-                create_layer(id, name_layer)
+            self.create_layer(id, name_layer)
 
     def apply_filters(self, control_name):
 
@@ -452,3 +394,88 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         self.treeWidgetData.clear()
         self.searchAPI(self.data_filter, total)
+
+    def create_layer(self, speciesCatalogueId, speciesName=''):
+        speciesid = speciesCatalogueId
+        speciesname = speciesName
+        skip = 0
+        len_results = 1
+
+        layer_name = f"{speciesid}_{speciesname}"
+
+        def fetch_data(speciesid, skip):
+
+            url_grid = f'https://easin.jrc.ec.europa.eu/api/geo/speciesid/' \
+                       f'{speciesid}/layertype/grid/take/50/skip/{skip}'
+            req = request.Request(url_grid)
+
+            self.requestInfo.setText(f'...requesting grid info')
+
+            with request.urlopen(req) as f:
+                return json.loads(f.read().decode(
+                    'utf-8'))
+
+        temp = QgsVectorLayer(
+            "Polygon?crs=epsg:3035"
+            "&field=LayerRecordId:string&index=yes"
+            "&field=SpeciesId:string"
+            "&field=SpeciesName:string"
+            "&field=YearMin:int"
+            "&field=YearMax:int"
+            "&field=Reference:string(400)"
+            "&field=Native:boolean"
+            "&field=DataPartner:string",
+            layer_name, "memory")
+
+        def addGrid(temp, apidata):
+            temp.startEditing()
+
+            for feature in apidata:
+                wkt = feature['Wkt']
+                geom = QgsGeometry()
+                geom = QgsGeometry.fromWkt(feature['Wkt'])
+                feat = QgsFeature()
+                feat.setGeometry(geom)
+
+                year_min = feature['YearMin'].replace("    ", "0")
+                year_max = feature['YearMax'].replace("    ", "0")
+
+                feat.setAttributes([
+                    feature['LayerRecordId'],
+                    feature['SpeciesId'],
+                    feature['SpeciesName'],
+                    int(year_min),
+                    int(year_max),
+                    feature['Reference'],
+                    feature['Native'],
+                    feature['DataPartner'],
+                ])
+                temp.dataProvider().addFeatures([feat])
+
+            temp.commitChanges()
+
+        while len_results > 0:
+            new_data = fetch_data(speciesid, skip)
+            skip += 50
+            results = new_data['results']
+            len_results = len(results)
+
+            addGrid(temp, results)
+
+        if temp.featureCount() > 0:
+            ## temp.renderer().symbol().setColor(QColor("red"))
+            ## temp.triggerRepaint()
+            QgsProject.instance().addMapLayer(temp)
+
+            self.requestInfo.setText(f'{layer_name} layer added.')
+
+            self.logText.appendPlainText('')
+            self.logText.appendPlainText(datetime.now().strftime("%Y/%m/%d, %H:%M:%S"))
+            self.logText.appendPlainText(f'- Grid layer added: {layer_name}')
+            self.logText.appendPlainText(
+                f'- API URL: https://easin.jrc.ec.europa.eu/api/geo/speciesid/{speciesid}/layertype/grid/take/50/skip/0')
+            self.logText.appendPlainText(f'- Total grids: {temp.featureCount()}')
+            ## qgis.utils.iface.setActiveLayer(temp)
+            ## qgis.utils.iface.zoomToActiveLayer()
+        else:
+            print('No results')

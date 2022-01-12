@@ -1,12 +1,12 @@
-
-
 import os
 import sys
 
 from urllib import parse
+
 urlparse = parse
-from urllib.request import urlopen, URLError
-import configparser
+
+UPPATH = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
+PLUGIN_PATH = UPPATH(__file__, 2)
 
 
 def get_file_dir(filename):
@@ -29,7 +29,9 @@ def getPath(n):
 
     return lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 
-MAX = 1000 # Maximum length of string after modifications.
+
+MAX = 1000  # Maximum length of string after modifications.
+
 
 def replaceSpaces(string):
     """Replaces spaces with %20 in-place and returns
