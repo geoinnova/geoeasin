@@ -6,7 +6,7 @@
 name=GeoEASIN
 qgisMinimumVersion=3.16
 description=Web services downloader and tools to analyze the European Alien Species Information Network data (EASIN).
-version=0.4
+version=1.0
 author=Patricio Soriano :: Geoinnova.org, Roberto Matellanes (processing tools)
 email=patricio.soriano@geoinnova.org
 
@@ -20,7 +20,8 @@ repository=https://github.com/geoinnova/geoeasin
 
 hasProcessingProvider=yes
 # Uncomment the following line and add your changelog:
-# changelog=
+changelog=
+	12.01.2022 V1.0: Version 1.0
 
 # Tags are comma separated with spaces allowed
 tags=open data, EASIN, EU, download, European Alien Species, web services, biodiversity, ecology, species
