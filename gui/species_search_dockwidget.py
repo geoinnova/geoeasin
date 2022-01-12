@@ -38,7 +38,7 @@ from qgis.core import Qgis, QgsMessageLog, QgsVectorLayer, QgsGeometry, QgsFeatu
 from ..tools.tools import replaceSpaces
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'geo_easin_dockwidget_base.ui'))
+    os.path.dirname(__file__), 'species_search_dockwidget_base.ui'))
 
 PATH_ICON_ZOOM = os.path.abspath(os.path.join(os.path.dirname(__file__), 'log') + '\log.log')
 

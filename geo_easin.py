@@ -12,7 +12,7 @@ from qgis.PyQt.QtWidgets import QAction
 from qgis.core import QgsApplication
 
 from .gui.about_dialog import AboutDialog
-from .gui.geo_easin_dockwidget import GeoEASINDockWidget
+from .gui.species_search_dockwidget import GeoEASINDockWidget
 from .processing_tools.processing_tools_provider import ProcessingToolsProvider
 from .tools import basemaps
 
@@ -72,7 +72,6 @@ class GeoEASIN:
 
         action.triggered.connect(callback)
         # action.triggered.connect( lambda param1: callback(param1))
-
 
         if status_tip is not None:
             action.setStatusTip(status_tip)
