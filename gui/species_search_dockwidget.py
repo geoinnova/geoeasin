@@ -29,6 +29,7 @@ from datetime import datetime
 from functools import partial
 from urllib import request
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QFont
 from PyQt5.QtWidgets import QTreeWidgetItem
 from qgis.PyQt import QtWidgets, uic
@@ -39,8 +40,6 @@ from ..tools.tools import replaceSpaces
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'species_search_dockwidget_base.ui'))
-
-UPPATH = lambda _path, n: os.sep.join(_path.split(os.sep)[:-n])
 
 
 def search_for(d, lst):
@@ -80,6 +79,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.treeWidgetData.setHeaderItem(QTreeWidgetItem(["Specie", ""]))
         self.treeWidgetData.setColumnWidth(0, 300)
         self.treeWidgetData.itemDoubleClicked.connect(partial(self.add_grid_layer))
+        self.treeWidgetData.sortByColumn(0, Qt.AscendingOrder)
 
         # Tab
         self.tabWidget.setCurrentIndex(0)
@@ -140,11 +140,11 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.btnSearch.setEnabled(False)
 
     def enable_filter(self, active: True):
-        '''
+        """
         Manage the checkboxes and the radio buttons state
         @param active:
         @return:
-        '''
+        """
         self.cb_IsEUConcern.setEnabled(active)
         self.cb_IsDeleted.setEnabled(active)
         self.cb_IsParasite.setEnabled(active)
@@ -158,10 +158,10 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.rb_Status_Questionable.setEnabled(active)  # N
 
     def clean_results(self):
-        '''
+        """
         Clean the research results, reset the the default widgets values and initialize the main variables
         @return:
-        '''
+        """
 
         self.data = None
         self.data_filter = None
@@ -192,7 +192,6 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def fetch_specie(self):
         """
 
-        @param term: the species scientific name or part of it
         @return:
         """
         self.clean_results()
@@ -220,12 +219,12 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 f'Error: {error}', level=Qgis.Critical)
 
     def searchAPI(self, data, add_log=False):
-        '''
+        """
 
         @param data:
         @param add_log:
         @return:
-        '''
+        """
         msg = 'There are no species corresponding to your search criteria'
 
         # self.sub_total = len(data) if data and data != msg else 0
@@ -292,12 +291,12 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             # print('except')
 
     def add_grid_layer(self, treeitem, item):
-        '''
+        """
 
         @param treeitem:
         @param item:
         @return:
-        '''
+        """
 
         get_selected = self.treeWidgetData.selectedItems()
 
@@ -306,15 +305,15 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             getChildNode = base_node.text(item)
             if "Add grid to map" in getChildNode:
                 name_layer = base_node.text(0)
-                id = base_node.text(1).split(":")[1].strip()
-                self.create_layer(id, name_layer)
+                idgrid = base_node.text(1).split(":")[1].strip()
+                self.create_layer(idgrid, name_layer)
 
     def apply_filters(self, control_name):
-        '''
+        """
 
         @param control_name:
         @return:
-        '''
+        """
 
         self.treeWidgetData.clear()
 
@@ -374,10 +373,10 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.searchAPI(data_filter)
 
     def onClickedImpact(self):
-        '''
+        """
 
         @return:
-        '''
+        """
 
         radio_btn = self.sender()
         data_filter = []
@@ -403,10 +402,10 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.searchAPI(data_filter)
 
     def onClickedStatus(self):
-        '''
+        """
 
         @return:
-        '''
+        """
 
         radio_btn = self.sender()
         data_filter = []
@@ -441,15 +440,15 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.sub_total = len(data_filter) if data_filter else 0
         self.searchAPI(data_filter)
 
-    def create_layer(self, speciesCatalogueId, speciesName=''):
-        '''
+    def create_layer(self, species_catalogue_id, species_name=''):
+        """
 
-        @param speciesCatalogueId:
-        @param speciesName:
+        @param species_catalogue_id:
+        @param species_name:
         @return:
-        '''
-        speciesid = speciesCatalogueId
-        speciesname = speciesName
+        """
+        speciesid = species_catalogue_id
+        speciesname = species_name
         skip = 0
         len_results = 1
 
@@ -483,8 +482,6 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             temp.startEditing()
 
             for feature in apidata:
-                wkt = feature['Wkt']
-                geom = QgsGeometry()
                 geom = QgsGeometry.fromWkt(feature['Wkt'])
                 feat = QgsFeature()
                 feat.setGeometry(geom)
@@ -515,8 +512,8 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             addGrid(temp, results)
 
         if temp.featureCount() > 0:
-            ## temp.renderer().symbol().setColor(QColor("red"))
-            ## temp.triggerRepaint()
+            # temp.renderer().symbol().setColor(QColor("red"))
+            # temp.triggerRepaint()
             QgsProject.instance().addMapLayer(temp)
 
             self.requestInfo.setText(f'{layer_name} layer added.')
@@ -527,7 +524,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.logText.appendPlainText(
                 f'- API URL: https://easin.jrc.ec.europa.eu/api/geo/speciesid/{speciesid}/layertype/grid/take/50/skip/0')
             self.logText.appendPlainText(f'- Total grids: {temp.featureCount()}')
-            ## qgis.utils.iface.setActiveLayer(temp)
-            ## qgis.utils.iface.zoomToActiveLayer()
+            # qgis.utils.iface.setActiveLayer(temp)
+            # qgis.utils.iface.zoomToActiveLayer()
         else:
             print('No results')
