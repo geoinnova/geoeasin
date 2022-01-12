@@ -61,6 +61,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.dict_to_search_for = {}
         self.total = 0
         self.sub_total = 0
+        self.url = None
 
         #  search DOCK WIDGETS
 
@@ -126,13 +127,6 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.rb_Status_Cryptogenic.toggled.connect(self.onClickedStatus)
         self.rb_Status_Unkhow.toggled.connect(self.onClickedStatus)
         self.rb_Status_Questionable.toggled.connect(self.onClickedStatus)
-
-        formatter = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        logfilename = r'E:\DESARROLLOS\plugins_qgis\geoeasin\example.log'
-
-        if os.path.isfile(logfilename):
-            with open(logfilename, 'w') as file:
-                pass
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -206,7 +200,6 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         term = self.lineSpecieText.text()
         term2 = re.sub('\\s+', ' ', term)
         term3 = replaceSpaces(term2)
-        self.url = None
 
         self.logText.appendPlainText(datetime.now().strftime("%Y/%m/%d, %H:%M:%S"))
 
@@ -223,12 +216,16 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             print(f'Error: {error}')
             self.requestInfo.setText("Connection error")
             self.logText.appendPlainText("Connection error")
-            # 2 - QgsMessageLog
-            # QgsMessageLog.logMessage(error, level=Qgis.Critical)
             QgsMessageLog.logMessage(
                 f'Error: {error}', level=Qgis.Critical)
 
     def searchAPI(self, data, add_log=False):
+        '''
+
+        @param data:
+        @param add_log:
+        @return:
+        '''
         msg = 'There are no species corresponding to your search criteria'
 
         # self.sub_total = len(data) if data and data != msg else 0
@@ -295,6 +292,12 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             # print('except')
 
     def add_grid_layer(self, treeitem, item):
+        '''
+
+        @param treeitem:
+        @param item:
+        @return:
+        '''
 
         get_selected = self.treeWidgetData.selectedItems()
 
@@ -307,6 +310,11 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 self.create_layer(id, name_layer)
 
     def apply_filters(self, control_name):
+        '''
+
+        @param control_name:
+        @return:
+        '''
 
         self.treeWidgetData.clear()
 
@@ -366,6 +374,10 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.searchAPI(data_filter)
 
     def onClickedImpact(self):
+        '''
+
+        @return:
+        '''
 
         radio_btn = self.sender()
         data_filter = []
@@ -391,6 +403,10 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.searchAPI(data_filter)
 
     def onClickedStatus(self):
+        '''
+
+        @return:
+        '''
 
         radio_btn = self.sender()
         data_filter = []
@@ -426,6 +442,12 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.searchAPI(data_filter)
 
     def create_layer(self, speciesCatalogueId, speciesName=''):
+        '''
+
+        @param speciesCatalogueId:
+        @param speciesName:
+        @return:
+        '''
         speciesid = speciesCatalogueId
         speciesname = speciesName
         skip = 0
