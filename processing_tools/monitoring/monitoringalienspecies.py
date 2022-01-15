@@ -9,7 +9,6 @@ import processing
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
-from qgis.core import QgsProcessingParameterBoolean
 from qgis.core import QgsProcessingParameterFeatureSink
 from qgis.core import QgsProcessingParameterVectorLayer
 
@@ -22,8 +21,6 @@ class AlienSpeciesHydroNetworkMonitoring(QgsProcessingAlgorithm):
         self.addParameter(QgsProcessingParameterVectorLayer('Watershedsoradministrativemanagementlimits',
                                                             'Watersheds or administrative management limits',
                                                             types=[QgsProcessing.TypeVectorPolygon], defaultValue=None))
-        self.addParameter(
-            QgsProcessingParameterBoolean('VERBOSE_LOG', 'Verbose logging', optional=True, defaultValue=False))
         self.addParameter(QgsProcessingParameterFeatureSink('MonitoringPoints', 'Monitoring points',
                                                             type=QgsProcessing.TypeVectorAnyGeometry,
                                                             createByDefault=True, supportsAppend=True,
@@ -83,23 +80,23 @@ class AlienSpeciesHydroNetworkMonitoring(QgsProcessingAlgorithm):
         return 'Alien species hydro network monitoring'
 
     def group(self):
-        return 'Distribution analysis'
+        return 'Monitoring'
 
     def groupId(self):
-        return 'Distribution analysis'
+        return 'Monitoring'
 
     def shortHelpString(self):
         return """<html><body><h2>Algorithm description</h2>
-<p>Location of administrative boundaries to monitoring alien species.</p>
-<h2>Input parameters</h2>
-<h3>Hydro network affected </h3>
-<p>The hydro network affected.</p>
-<h3>Watersheds or administrative management limits</h3>
-<p>Watersheds or administrative management limits.</p>
-<h2>Outputs</h2>
-<h3>Monitoring points</h3>
-<p>Points location to monitoring alien species.</p>
-<br><p align="right">Algorithm author: Roberto Matellanes</p></body></html>"""
+                <p>Location of administrative boundaries to monitoring alien species.</p>
+                <h2>Input parameters</h2>
+                <h3>Hydro network affected </h3>
+                <p>The hydro network affected.</p>
+                <h3>Watersheds or administrative management limits</h3>
+                <p>Watersheds or administrative management limits.</p>
+                <h2>Outputs</h2>
+                <h3>Monitoring points</h3>
+                <p>Points location to monitoring alien species.</p>
+                <br><p align="right">Algorithm author: Roberto Matellanes</p></body></html>"""
 
     def createInstance(self):
         return AlienSpeciesHydroNetworkMonitoring()

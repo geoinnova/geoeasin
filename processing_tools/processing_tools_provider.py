@@ -3,7 +3,11 @@ from os import path
 from PyQt5.QtGui import QIcon
 from qgis.core import QgsProcessingProvider
 
-from .distribuition_analysis import *
+from .analysis import *
+from .dispersion import *
+from .distribuition import *
+from .monitoring import *
+from .range import *
 
 
 class ProcessingToolsProvider(QgsProcessingProvider):
@@ -38,4 +42,4 @@ class ProcessingToolsProvider(QgsProcessingProvider):
         """Should return a QIcon which is used for your provider inside
         the Processing toolbox.
         """
-        return QIcon(path.dirname(__file__) + '/img/geoeasinicon.png')
+        return QIcon(path.dirname(__file__) + '/geoeasinicon.png')

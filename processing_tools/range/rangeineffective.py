@@ -9,7 +9,6 @@ import processing
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
-from qgis.core import QgsProcessingParameterBoolean
 from qgis.core import QgsProcessingParameterDefinition
 from qgis.core import QgsProcessingParameterFeatureSink
 from qgis.core import QgsProcessingParameterNumber
@@ -39,8 +38,6 @@ class RangeUsingIneffectiveAreas(QgsProcessingAlgorithm):
         self.addParameter(param)
         self.addParameter(QgsProcessingParameterFeatureSink('Range', 'Range', type=QgsProcessing.TypeVectorAnyGeometry,
                                                             createByDefault=True, defaultValue=None))
-        self.addParameter(
-            QgsProcessingParameterBoolean('VERBOSE_LOG', 'Verbose logging', optional=True, defaultValue=False))
 
     def processAlgorithm(self, parameters, context, model_feedback):
         # Use a multi-step feedback, so that individual child algorithm progress reports are adjusted for the
@@ -147,29 +144,29 @@ class RangeUsingIneffectiveAreas(QgsProcessingAlgorithm):
         return 'Range (using ineffective areas)'
 
     def group(self):
-        return 'Distribution analysis'
+        return 'Range'
 
     def groupId(self):
-        return 'Distribution analysis'
+        return 'Range'
 
     def shortHelpString(self):
         return """<html><body><h2>Algorithm description</h2>
-<p>Calculates the potential distribution area based on the dispersal capacity of the species and the exclusion of ineffective distribution areas.</p>
-<h2>Input parameters</h2>
-<h3>Species distribution</h3>
-<p>The species distribution from EASIN or other resource. </p>
-<h3>Dispersal distance</h3>
-<p>Use a prudent maximum distance to which the species can disperse. </p>
-<h3>Reference grid or administrative boundaries</h3>
-<p>Use a grid or any administrative boundaries.</p>
-<h3>Inefective area (such as barriers or inefective ecosystems)</h3>
-<p>For ineffective areas (water bodies, islands, roads, urban areas) use the limits of the ineffective vector entities.</p>
-<h3>Inefective distance o presure distance</h3>
-<p>Ineffective buffer or radius of influence around the ineffective areas.</p>
-<h2>Outputs</h2>
-<h3>Range</h3>
-<p>The output range distribution.</p>
-<br><p align="right">Algorithm author: Roberto Matellanes</p></body></html>"""
+                <p>Calculates the potential distribution area based on the dispersal capacity of the species and the exclusion of ineffective distribution areas.</p>
+                <h2>Input parameters</h2>
+                <h3>Species distribution</h3>
+                <p>The species distribution from EASIN or other resource. </p>
+                <h3>Dispersal distance</h3>
+                <p>Use a prudent maximum distance to which the species can disperse. </p>
+                <h3>Reference grid or administrative boundaries</h3>
+                <p>Use a grid or any administrative boundaries.</p>
+                <h3>Inefective area (such as barriers or inefective ecosystems)</h3>
+                <p>For ineffective areas (water bodies, islands, roads, urban areas) use the limits of the ineffective vector entities.</p>
+                <h3>Inefective distance o presure distance</h3>
+                <p>Ineffective buffer or radius of influence around the ineffective areas.</p>
+                <h2>Outputs</h2>
+                <h3>Range</h3>
+                <p>The output range distribution.</p>
+                <br><p align="right">Algorithm author: Roberto Matellanes</p></body></html>"""
 
     def createInstance(self):
         return RangeUsingIneffectiveAreas()

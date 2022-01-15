@@ -9,7 +9,6 @@ import processing
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
-from qgis.core import QgsProcessingParameterBoolean
 from qgis.core import QgsProcessingParameterFeatureSink
 from qgis.core import QgsProcessingParameterNumber
 from qgis.core import QgsProcessingParameterVectorLayer
@@ -28,8 +27,6 @@ class Range(QgsProcessingAlgorithm):
                                               types=[QgsProcessing.TypeVectorPolygon], defaultValue=None))
         self.addParameter(QgsProcessingParameterFeatureSink('Range', 'Range', type=QgsProcessing.TypeVectorAnyGeometry,
                                                             createByDefault=True, defaultValue=None))
-        self.addParameter(
-            QgsProcessingParameterBoolean('VERBOSE_LOG', 'Verbose logging', optional=True, defaultValue=False))
 
     def processAlgorithm(self, parameters, context, model_feedback):
         # Use a multi-step feedback, so that individual child algorithm progress reports are adjusted for the
@@ -75,25 +72,25 @@ class Range(QgsProcessingAlgorithm):
         return 'Range'
 
     def group(self):
-        return 'Distribution analysis'
+        return 'Range'
 
     def groupId(self):
-        return 'Distribution analysis'
+        return 'Range'
 
     def shortHelpString(self):
         return """<html><body><h2>Algorithm description</h2>
-<p>Calculates the potential distribution area using the dispersal capacity of the species.</p>
-<h2>Input parameters</h2>
-<h3>Species distribution</h3>
-<p>The species distribution from EASIN or other resource. </p>
-<h3>Dispersal distance</h3>
-<p>Use a prudent maximum distance to which the species can disperse.</p>
-<h3>Reference grid or administrative boundaries</h3>
-<p>Use a new grid or any administrative boundaries.</p>
-<h2>Outputs</h2>
-<h3>Range</h3>
-<p>The output range distribution.</p>
-<br><p align="right">Algorithm author: Roberto Matellanes</p></body></html>"""
+                <p>Calculates the potential distribution area using the dispersal capacity of the species.</p>
+                <h2>Input parameters</h2>
+                <h3>Species distribution</h3>
+                <p>The species distribution from EASIN or other resource. </p>
+                <h3>Dispersal distance</h3>
+                <p>Use a prudent maximum distance to which the species can disperse.</p>
+                <h3>Reference grid or administrative boundaries</h3>
+                <p>Use a new grid or any administrative boundaries.</p>
+                <h2>Outputs</h2>
+                <h3>Range</h3>
+                <p>The output range distribution.</p>
+                <br><p align="right">Algorithm author: Roberto Matellanes</p></body></html>"""
 
     def createInstance(self):
         return Range()

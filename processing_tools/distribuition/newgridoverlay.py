@@ -9,7 +9,6 @@ import processing
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
-from qgis.core import QgsProcessingParameterBoolean
 from qgis.core import QgsProcessingParameterFeatureSink
 from qgis.core import QgsProcessingParameterNumber
 from qgis.core import QgsProcessingParameterVectorLayer
@@ -18,6 +17,9 @@ from qgis.core import QgsProcessingParameterVectorLayer
 class CreateGridOverlayDistribution(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
+        self.addParameter(
+            QgsProcessingParameterVectorLayer('Speciesgriddistribution', 'Occurences or species distribution grid',
+                                              types=[QgsProcessing.TypeVectorAnyGeometry], defaultValue=None))
         self.addParameter(QgsProcessingParameterNumber('Horizontaldistance', 'Horizontal distance',
                                                        type=QgsProcessingParameterNumber.Double, defaultValue=None))
         self.addParameter(QgsProcessingParameterNumber('Verticaldistance', 'Vertical distance',
@@ -25,11 +27,6 @@ class CreateGridOverlayDistribution(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSink('OutputGrid', 'Output grid', type=QgsProcessing.TypeVectorAnyGeometry,
                                               createByDefault=True, defaultValue='TEMPORARY_OUTPUT'))
-        self.addParameter(
-            QgsProcessingParameterBoolean('VERBOSE_LOG', 'Verbose logging', optional=True, defaultValue=False))
-        self.addParameter(
-            QgsProcessingParameterVectorLayer('Speciesgriddistribution', 'Occurences or species distribution grid',
-                                              types=[QgsProcessing.TypeVectorAnyGeometry], defaultValue=None))
 
     def processAlgorithm(self, parameters, context, model_feedback):
         # Use a multi-step feedback, so that individual child algorithm progress reports are adjusted for the
@@ -75,27 +72,25 @@ class CreateGridOverlayDistribution(QgsProcessingAlgorithm):
         return 'Create grid (overlay distribution)'
 
     def group(self):
-        return 'Distribution analysis'
+        return 'Distribution'
 
     def groupId(self):
-        return 'Distribution analysis'
+        return 'Distribution'
 
     def shortHelpString(self):
         return """<html><body><h2>Algorithm description</h2>
-<p>Create a new grid using a the original species distribution overlay.</p>
-<h2>Input parameters</h2>
-<h3>Horizontal distance</h3>
-<p>Width grid.</p>
-<h3>Vertical distance</h3>
-<p>Height grid.</p>
-<h3>Output grid</h3>
-<p>The new output grid.</p>
-<h3>Occurences or species distribution grid</h3>
-<p>The species distribution from EASIN or other occurences distribution.</p>
-<h2>Outputs</h2>
-<h3>Output grid</h3>
-<p>The new output grid.</p>
-<br><p align="right">Algorithm author: Roberto Matellanes</p></body></html>"""
+                <p>Create a new grid using a the original species distribution overlay.</p>
+                <h2>Input parameters</h2>
+                <h3>Occurences or species distribution grid</h3>
+                <p>The species distribution from EASIN or other occurences distribution.</p>
+                <h3>Horizontal distance</h3>
+                <p>Width grid.</p>
+                <h3>Vertical distance</h3>
+                <p>Height grid.</p>
+                <h2>Outputs</h2>
+                <h3>Output grid</h3>
+                <p>The new output grid.</p>
+                <br><p align="right">Algorithm author: Roberto Matellanes</p></body></html>"""
 
     def createInstance(self):
         return CreateGridOverlayDistribution()

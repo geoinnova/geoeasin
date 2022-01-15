@@ -9,7 +9,6 @@ import processing
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
-from qgis.core import QgsProcessingParameterBoolean
 from qgis.core import QgsProcessingParameterNumber
 from qgis.core import QgsProcessingParameterRasterLayer
 from qgis.core import QgsProcessingParameterVectorDestination
@@ -18,14 +17,12 @@ from qgis.core import QgsProcessingParameterVectorDestination
 class HydroNetwork(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
-        self.addParameter(
-            QgsProcessingParameterBoolean('VERBOSE_LOG', 'Verbose logging', optional=True, defaultValue=False))
         self.addParameter(QgsProcessingParameterRasterLayer('DigitalElevationModelDEM', 'Digital Elevation Model (DEM)',
                                                             defaultValue=None))
         self.addParameter(
             QgsProcessingParameterNumber('Watershedsize', 'Watershed size', type=QgsProcessingParameterNumber.Double,
                                          defaultValue=None))
-        self.addParameter(QgsProcessingParameterVectorDestination('Hydronetwork', 'Hydronetwork',
+        self.addParameter(QgsProcessingParameterVectorDestination('HydroNetwork', 'Hydro network',
                                                                   type=QgsProcessing.TypeVectorAnyGeometry,
                                                                   createByDefault=True, defaultValue=None))
 
@@ -65,9 +62,9 @@ class HydroNetwork(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return {}
 
-        # Vectorizacion de rios
+        # r.to.vect
         alg_params = {
-            '-b': True,
+            '-b': False,
             '-s': False,
             '-t': False,
             '-v': False,
@@ -81,11 +78,11 @@ class HydroNetwork(QgsProcessingAlgorithm):
             'column': 'value',
             'input': outputs['ElementosTotalesDeRed']['stream'],
             'type': 0,
-            'output': parameters['Hydronetwork']
+            'output': parameters['HydroNetwork']
         }
-        outputs['VectorizacionDeRios'] = processing.run('grass7:r.to.vect', alg_params, context=context,
-                                                        feedback=feedback, is_child_algorithm=True)
-        results['Hydronetwork'] = outputs['VectorizacionDeRios']['output']
+        outputs['Rtovect'] = processing.run('grass7:r.to.vect', alg_params, context=context, feedback=feedback,
+                                            is_child_algorithm=True)
+        results['HydroNetwork'] = outputs['Rtovect']['output']
         return results
 
     def name(self):
@@ -95,10 +92,10 @@ class HydroNetwork(QgsProcessingAlgorithm):
         return 'Hydro network'
 
     def group(self):
-        return 'Distribution analysis'
+        return 'Dispersion'
 
     def groupId(self):
-        return 'Distribution analysis'
+        return 'Dispersion'
 
     def shortHelpString(self):
         return """<html><body><h2>Algorithm description</h2>
@@ -109,8 +106,8 @@ class HydroNetwork(QgsProcessingAlgorithm):
 <h3>Watershed size</h3>
 <p>Watershed size.</p>
 <h2>Outputs</h2>
-<h3>Hydronetwork</h3>
-<p>The hydro network output.</p>
+<h3>Hydro network</h3>
+<p>Hydro network</p>
 <br><p align="right">Algorithm author: Roberto Matellanes</p></body></html>"""
 
     def createInstance(self):

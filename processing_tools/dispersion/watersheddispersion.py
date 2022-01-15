@@ -9,7 +9,6 @@ import processing
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
-from qgis.core import QgsProcessingParameterBoolean
 from qgis.core import QgsProcessingParameterPoint
 from qgis.core import QgsProcessingParameterRasterDestination
 from qgis.core import QgsProcessingParameterRasterLayer
@@ -21,8 +20,6 @@ class WatershedDispersion(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterPoint('Citadelaespecie', 'Specie ocurrence', defaultValue='0.000000,0.000000'))
         self.addParameter(QgsProcessingParameterRasterLayer('DEM', 'Digital Elevation Model (DEM)', defaultValue=None))
-        self.addParameter(
-            QgsProcessingParameterBoolean('VERBOSE_LOG', 'Verbose logging', optional=True, defaultValue=False))
         self.addParameter(
             QgsProcessingParameterRasterDestination('WatershedDispersion', 'Watershed dispersion', createByDefault=True,
                                                     defaultValue=None))
@@ -85,10 +82,10 @@ class WatershedDispersion(QgsProcessingAlgorithm):
         return 'Watershed dispersion'
 
     def group(self):
-        return 'Distribution analysis'
+        return 'Dispersion'
 
     def groupId(self):
-        return 'Distribution analysis'
+        return 'Dispersion'
 
     def shortHelpString(self):
         return """<html><body><h2>Algorithm description</h2>

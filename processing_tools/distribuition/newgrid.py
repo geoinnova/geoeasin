@@ -9,7 +9,6 @@ import processing
 from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
-from qgis.core import QgsProcessingParameterBoolean
 from qgis.core import QgsProcessingParameterFeatureSink
 from qgis.core import QgsProcessingParameterNumber
 from qgis.core import QgsProcessingParameterVectorLayer
@@ -28,8 +27,6 @@ class CreateANewGrid(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSink('OutputGrid', 'Output grid', type=QgsProcessing.TypeVectorPolygon,
                                               createByDefault=True, defaultValue=None))
-        self.addParameter(
-            QgsProcessingParameterBoolean('VERBOSE_LOG', 'Verbose logging', optional=True, defaultValue=False))
 
     def processAlgorithm(self, parameters, context, model_feedback):
         # Use a multi-step feedback, so that individual child algorithm progress reports are adjusted for the
@@ -61,10 +58,10 @@ class CreateANewGrid(QgsProcessingAlgorithm):
         return 'Create a new grid'
 
     def group(self):
-        return 'Distribution analysis'
+        return 'Distribution'
 
     def groupId(self):
-        return 'Distribution analysis'
+        return 'Distribution'
 
     def shortHelpString(self):
         return """<html><body><h2>Algorithm description</h2>
@@ -76,8 +73,6 @@ class CreateANewGrid(QgsProcessingAlgorithm):
 <p>Width grid.</p>
 <h3>Vertical distance</h3>
 <p>Height grid.</p>
-<h3>Output grid</h3>
-<p>The new output grid.</p>
 <h2>Outputs</h2>
 <h3>Output grid</h3>
 <p>The new output grid.</p>

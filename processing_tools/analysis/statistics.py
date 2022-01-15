@@ -10,7 +10,6 @@ from qgis.core import QgsProcessing
 from qgis.core import QgsProcessingAlgorithm
 from qgis.core import QgsProcessingMultiStepFeedback
 from qgis.core import QgsProcessingParameterBand
-from qgis.core import QgsProcessingParameterBoolean
 from qgis.core import QgsProcessingParameterExpression
 from qgis.core import QgsProcessingParameterRasterLayer
 from qgis.core import QgsProcessingParameterVectorLayer
@@ -21,16 +20,14 @@ class EnvironmentStatistics(QgsProcessingAlgorithm):
     def initAlgorithm(self, config=None):
         self.addParameter(QgsProcessingParameterVectorLayer('speciedistribution', 'Species distribution',
                                                             types=[QgsProcessing.TypeVectorPolygon], defaultValue=None))
+        self.addParameter(
+            QgsProcessingParameterRasterLayer('Environmentlayer', 'Environment raster variable (band or multi band)',
+                                              defaultValue=None))
         self.addParameter(QgsProcessingParameterBand('envband', 'Band', parentLayerParameterName='Environmentlayer',
                                                      allowMultiple=False, defaultValue=[0]))
         self.addParameter(
             QgsProcessingParameterExpression('fieldname', 'Field statistic name', parentLayerParameterName='',
                                              defaultValue='STA_'))
-        self.addParameter(
-            QgsProcessingParameterBoolean('VERBOSE_LOG', 'Verbose logging', optional=True, defaultValue=False))
-        self.addParameter(
-            QgsProcessingParameterRasterLayer('Environmentlayer', 'Environment raster variable (band or multi band)',
-                                              defaultValue=None))
 
     def processAlgorithm(self, parameters, context, model_feedback):
         # Use a multi-step feedback, so that individual child algorithm progress reports are adjusted for the
@@ -58,10 +55,10 @@ class EnvironmentStatistics(QgsProcessingAlgorithm):
         return 'Environment statistics'
 
     def group(self):
-        return 'Distribution analysis'
+        return 'Analysis'
 
     def groupId(self):
-        return 'Distribution analysis'
+        return 'Analysis'
 
     def shortHelpString(self):
         return """<html><body><h2>Algorithm description</h2>
@@ -69,12 +66,12 @@ class EnvironmentStatistics(QgsProcessingAlgorithm):
 <h2>Input parameters</h2>
 <h3>Species distribution</h3>
 <p>Select the species distribution from EASIN or other resource. </p>
+<h3>Environment raster variable (band or multi band)</h3>
+<p>Use a environmental raster to obtain its statistical values ​​(temperature, altitude, precipitation ...)</p>
 <h3>Band</h3>
 <p>For multiband raster, select the specific analysis band.</p>
 <h3>Field statistic name</h3>
 <p>Variable name as prefix in input fields from species distribution layer.</p>
-<h3>Environment raster variable (band or multi band)</h3>
-<p>Use a environmental raster to obtain its statistical values ​​(temperature, altitude, precipitation ...)</p>
 <br><p align="right">Algorithm author: Roberto Matellanes</p></body></html>"""
 
     def createInstance(self):
