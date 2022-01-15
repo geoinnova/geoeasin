@@ -31,7 +31,7 @@ from urllib import request
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QFont
-from PyQt5.QtWidgets import QTreeWidgetItem
+from PyQt5.QtWidgets import QTreeWidgetItem, QMessageBox
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.core import Qgis, QgsMessageLog, QgsVectorLayer, QgsGeometry, QgsFeature, QgsProject
@@ -50,7 +50,7 @@ def search_for(d, lst):
 class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     closingPlugin = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, iface, parent=None):
         """Constructor."""
         super(GeoEASINDockWidget, self).__init__(parent)
         self.setupUi(self)
@@ -61,6 +61,8 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.total = 0
         self.sub_total = 0
         self.url = None
+
+        self.iface = iface
 
         #  search DOCK WIDGETS
 
@@ -306,7 +308,15 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             if "Add grid to map" in getChildNode:
                 name_layer = base_node.text(0)
                 idgrid = base_node.text(1).split(":")[1].strip()
-                self.create_layer(idgrid, name_layer)
+                advice_message = 'Depending on the number of grids to download, the process may take some time. \n\n' \
+                                 'Do you wish to continue? '
+                reply = QMessageBox.question(self.iface.mainWindow(), 'Add grid to map', advice_message,
+                                             QMessageBox.Yes,
+                                             QMessageBox.Cancel)
+                if reply == QMessageBox.Yes:
+                    self.create_layer(idgrid, name_layer)
+                else:
+                    print('Cancel')
 
     def apply_filters(self, control_name):
         """
@@ -517,6 +527,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             QgsProject.instance().addMapLayer(temp)
 
             self.requestInfo.setText(f'{layer_name} layer added.')
+            self.iface.messageBar().pushMessage("INFO", f'{layer_name} layer added.', Qgis.Info, 5)
 
             self.logText.appendPlainText('')
             self.logText.appendPlainText(datetime.now().strftime("%Y/%m/%d, %H:%M:%S"))
@@ -524,7 +535,16 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.logText.appendPlainText(
                 f'- API URL: https://easin.jrc.ec.europa.eu/api/geo/speciesid/{speciesid}/layertype/grid/take/50/skip/0')
             self.logText.appendPlainText(f'- Total grids: {temp.featureCount()}')
-            # qgis.utils.iface.setActiveLayer(temp)
-            # qgis.utils.iface.zoomToActiveLayer()
+
+            advice_message = 'Do you want to zoom in the new layer?'
+            reply = QMessageBox.question(self.iface.mainWindow(), 'Add grid to map', advice_message,
+                                         QMessageBox.Yes,
+                                         QMessageBox.Cancel)
+            if reply == QMessageBox.Yes:
+                self.iface.setActiveLayer(temp)
+                self.iface.zoomToActiveLayer()
+            else:
+                print('Cancel')
+
         else:
             print('No results')
