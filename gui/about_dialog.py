@@ -34,8 +34,7 @@ class AboutDialog(QtWidgets.QDialog, FORM_CLASS):
         return self.tr(
             '<p>Web services downloader and tools to analyze the European Alien Species Information Network data (EASIN).'
             '<a href="https://easin.jrc.ec.europa.eu/easin/Services/RestfulWebService">+Info</a></p>'
-            '<p><strong>Developers:</strong> <a href="https://geoinnova.org/">Patricio Soriano (Geoinnova.org)</a>, <a href="http://www.gisandbeers.com/roberto-aspectos-profesionales-en-sig/">Roberto Matellanes</a></p>'
-            '<p><strong>Homepage:</strong> <a href="https://geoinnova.org/plugin/geoeasin">Homepage</a></p>'
+            '<p><strong>Developers:</strong> <a href="https://geoinnova.org/">Geoinnova</a>, <a href="http://www.gisandbeers.com/roberto-aspectos-profesionales-en-sig/">Roberto Matellanes</a></p>'
             '<p><strong>Issue tracker:</strong> <a href="https://github.com/geoinnova/geoeasin/issues">GitHub</a></p>'
             '<p><strong>Source code:</strong> <a href="https://github.com/geoinnova/geoeasin">GitHub</a></p>')
 
