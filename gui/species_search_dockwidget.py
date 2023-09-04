@@ -88,29 +88,42 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         # CheckBox filters
         self.cb_IsEUConcern.setCheckState(1)
-        self.cb_IsDeleted.setCheckState(1)
-        self.cb_IsParasite.setCheckState(1)
+        self.cb_IsHighImpact.setCheckState(1)
+        self.cb_IsOutermostConcern.setCheckState(1)
+        ## API2
+        self.cb_IsMSConcern.setCheckState(1)
+        self.cb_IsPartNative.setCheckState(1)
+        self.cb_IsHorizonScanning.setCheckState(1)
 
         self.cb_IsEUConcern.setEnabled(False)
-        self.cb_IsDeleted.setEnabled(False)
-        self.cb_IsParasite.setEnabled(False)
+        self.cb_IsHighImpact.setEnabled(False)
+        self.cb_IsOutermostConcern.setEnabled(False)
+        ## API2
+        self.cb_IsMSConcern.setEnabled(False)
+        self.cb_IsPartNative.setEnabled(False)
+        self.cb_IsHorizonScanning.setEnabled(False)
+
 
         self.cb_IsEUConcern.stateChanged.connect(lambda: self.apply_filters(self.cb_IsEUConcern))
-        self.cb_IsDeleted.stateChanged.connect(lambda: self.apply_filters(self.cb_IsDeleted))
-        self.cb_IsParasite.stateChanged.connect(lambda: self.apply_filters(self.cb_IsParasite))
+        self.cb_IsHighImpact.stateChanged.connect(lambda: self.apply_filters(self.cb_IsHighImpact))
+        self.cb_IsOutermostConcern.stateChanged.connect(lambda: self.apply_filters(self.cb_IsOutermostConcern))
+        ## API2
+        self.cb_IsMSConcern.stateChanged.connect(lambda: self.apply_filters(self.cb_IsMSConcern))
+        self.cb_IsPartNative.stateChanged.connect(lambda: self.apply_filters(self.cb_IsPartNative))
+        self.cb_IsHorizonScanning.stateChanged.connect(lambda: self.apply_filters(self.cb_IsHorizonScanning))
 
         # Radiobutton filters
-        self.rb_Impact_All.setChecked(True)
-        self.rb_Impact_High.setChecked(False)
-        self.rb_Impact_Low.setChecked(False)
-
-        self.rb_Impact_All.setEnabled(False)
-        self.rb_Impact_High.setEnabled(False)  # Hi
-        self.rb_Impact_Low.setEnabled(False)  # Lo
-
-        self.rb_Impact_All.toggled.connect(self.onClickedImpact)
-        self.rb_Impact_High.toggled.connect(self.onClickedImpact)
-        self.rb_Impact_Low.toggled.connect(self.onClickedImpact)
+        # self.rb_Impact_All.setChecked(True)
+        # self.rb_Impact_High.setChecked(False)
+        # self.rb_Impact_Low.setChecked(False)
+        #
+        # self.rb_Impact_All.setEnabled(False)
+        # self.rb_Impact_High.setEnabled(False)  # Hi
+        # self.rb_Impact_Low.setEnabled(False)  # Lo
+        #
+        # self.rb_Impact_All.toggled.connect(self.onClickedImpact)
+        # self.rb_Impact_High.toggled.connect(self.onClickedImpact)
+        # self.rb_Impact_Low.toggled.connect(self.onClickedImpact)
 
         self.rb_Status_All.setChecked(True)
         self.rb_Status_Alien.setChecked(False)  # A
@@ -148,11 +161,14 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         @return:
         """
         self.cb_IsEUConcern.setEnabled(active)
-        self.cb_IsDeleted.setEnabled(active)
-        self.cb_IsParasite.setEnabled(active)
-        self.rb_Impact_All.setEnabled(active)
-        self.rb_Impact_High.setEnabled(active)
-        self.rb_Impact_Low.setEnabled(active)
+        self.cb_IsHighImpact.setEnabled(active)
+        self.cb_IsOutermostConcern.setEnabled(active)
+        self.cb_IsMSConcern.setEnabled(active)
+        self.cb_IsPartNative.setEnabled(active)
+        self.cb_IsHorizonScanning.setEnabled(active)
+        # self.rb_Impact_All.setEnabled(active)
+        # self.rb_Impact_High.setEnabled(active)
+        # self.rb_Impact_Low.setEnabled(active)
         self.rb_Status_All.setEnabled(active)
         self.rb_Status_Alien.setEnabled(active)  # A
         self.rb_Status_Cryptogenic.setEnabled(active)  # C
@@ -178,12 +194,15 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.enable_filter(False)
 
         self.cb_IsEUConcern.setCheckState(1)
-        self.cb_IsDeleted.setCheckState(1)
-        self.cb_IsParasite.setCheckState(1)
+        self.cb_IsHighImpact.setCheckState(1)
+        self.cb_IsOutermostConcern.setCheckState(1)
+        self.cb_IsMSConcern.setCheckState(1)
+        self.cb_IsPartNative.setCheckState(1)
+        self.cb_IsHorizonScanning.setCheckState(1)
 
-        self.rb_Impact_All.setChecked(True)
-        self.rb_Impact_High.setChecked(False)
-        self.rb_Impact_Low.setChecked(False)
+        # self.rb_Impact_All.setChecked(True)
+        # self.rb_Impact_High.setChecked(False)
+        # self.rb_Impact_Low.setChecked(False)
 
         self.rb_Status_All.setChecked(True)
         self.rb_Status_Alien.setChecked(False)  # A
@@ -205,12 +224,15 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.logText.appendPlainText(datetime.now().strftime("%Y/%m/%d, %H:%M:%S"))
 
         try:
-            self.url = f'https://easin.jrc.ec.europa.eu/api/cat/term/{term3}'
+            self.url = f'https://easin.jrc.ec.europa.eu/apixg/catxg/term/{term3}'
+            print(self.url)
+            # self.url = f'https://easin.jrc.ec.europa.eu/api/cat/term/{term3}'
             req = request.Request(self.url)
 
             with request.urlopen(req) as f:
                 data_json = json.loads(f.read().decode('utf-8'))
-                self.data = data_json['results']
+                # self.data = data_json['results']
+                self.data = data_json
                 self.searchAPI(self.data, True)
 
         except Exception as error:
@@ -243,16 +265,18 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 self.total = len(data) if data and data != msg else 0
                 self.logText.appendPlainText(f'- Term of search: {self.lineSpecieText.text()} ')
                 self.logText.appendPlainText(f'- API URL: {self.url} ')
-                self.logText.appendPlainText(f'- Total results: {self.total}')
-                self.requestInfo.setText(f'Total results: {self.total}')
+                self.logText.appendPlainText(f'- Total species found: {self.total}')
+                self.requestInfo.setText(f'Total species found: {self.total}')
             else:
                 self.requestInfo.setText(f'Filter results: {self.sub_total} of {self.total} ')
 
         try:
             self.enable_filter(True)
             for dataLevel0 in data:
-                speciesName = dataLevel0['SpeciesName']
-                speciesCatalogueId = dataLevel0['SpeciesCatalogueId']
+                # speciesName = dataLevel0['SpeciesName']
+                speciesName = dataLevel0['Name']
+                # speciesCatalogueId = dataLevel0['SpeciesCatalogueId']
+                speciesCatalogueId = dataLevel0['EASINID']
                 item_level0 = QTreeWidgetItem(self.treeWidgetData,
                                               [speciesName, 'Add grid to map: ' + speciesCatalogueId, ''])
                 font = QFont()
@@ -261,7 +285,7 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                 item_level0.setForeground(1, QColor("blue"))
                 item_level0.setToolTip(1, 'Double click to add')
 
-                print(item_level0)
+                # print(item_level0)
                 self.treeWidgetData.addTopLevelItem(item_level0)
 
                 for dataLevel1 in dataLevel0.items():
@@ -314,73 +338,53 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
                                              QMessageBox.Yes,
                                              QMessageBox.Cancel)
                 if reply == QMessageBox.Yes:
+                    print('0. Acepta info y Lanza la funcion create_layer', 'idgrid', idgrid)
                     self.create_layer(idgrid, name_layer)
                 else:
-                    print('Cancel')
+                    print('Cancel by user')
 
     def apply_filters(self, control_name):
         """
-
         @param control_name:
         @return:
         """
 
         self.treeWidgetData.clear()
+        print('apply_filters', self.data)
 
-        if control_name.text() == 'Is EU concern':
-            data_filter = []
+        filter_mapping = {
+            'Is EU concern': 'IsEUConcern',
+            'Is High Impact': 'IsHighImpact',
+            'Is Outer most Concern': 'IsOutermostConcern',
+            'Is MS Concern': 'IsMSConcern',
+            'Is Part Native': 'IsPartNative',
+            'Is Horizon Scanning': 'IsHorizonScanning'
+        }
 
-            if control_name.checkState() == 2:
-                item = {"IsEuConcern": True, }
-                self.dict_to_search_for.update(item)
-                data_filter = search_for(self.dict_to_search_for, self.data)
+        attribute_name = filter_mapping.get(control_name.text())
 
-            elif control_name.checkState() == 0:
-                item = {"IsEuConcern": False, }
-                self.dict_to_search_for.update(item)
-                data_filter = search_for(self.dict_to_search_for, self.data)
-            else:
-                del self.dict_to_search_for["IsEuConcern"]
-                data_filter = search_for(self.dict_to_search_for, self.data)
+        if attribute_name is None:
+            return  # Exit if the control name is not recognized
 
-            self.treeWidgetData.clear()
-            self.sub_total = len(data_filter) if data_filter else 0
-            self.searchAPI(data_filter)
+        data_filter = []
+        check_state = control_name.checkState()
 
-        if control_name.text() == 'Is Deleted':
-            data_filter = []
-            if control_name.checkState() == 2:
-                item = {"IsDeleted": True, }
-                self.dict_to_search_for.update(item)
-                data_filter = search_for(self.dict_to_search_for, self.data)
-            elif control_name.checkState() == 0:
-                item = {"IsDeleted": False, }
-                self.dict_to_search_for.update(item)
-                data_filter = search_for(self.dict_to_search_for, self.data)
-            else:
-                del self.dict_to_search_for["IsDeleted"]
-                data_filter = search_for(self.dict_to_search_for, self.data)
+        if check_state == 2:
+            item = {attribute_name: True}
+            self.dict_to_search_for.update(item)
+            data_filter = search_for(self.dict_to_search_for, self.data)
+        elif check_state == 0:
+            item = {attribute_name: False}
+            self.dict_to_search_for.update(item)
+            data_filter = search_for(self.dict_to_search_for, self.data)
+        else:
+            del self.dict_to_search_for[attribute_name]
+            data_filter = search_for(self.dict_to_search_for, self.data)
 
-            self.treeWidgetData.clear()
-            self.sub_total = len(data_filter) if data_filter else 0
-            self.searchAPI(data_filter)
+        self.treeWidgetData.clear()
+        self.sub_total = len(data_filter) if data_filter else 0
+        self.searchAPI(data_filter)
 
-        if control_name.text() == 'Is Parasite':
-            data_filter = []
-            if control_name.checkState() == 2:
-                item = {"IsParasite": True, }
-                self.dict_to_search_for.update(item)
-                data_filter = search_for(self.dict_to_search_for, self.data)
-            elif control_name.checkState() == 0:
-                item = {"IsParasite": False, }
-                self.dict_to_search_for.update(item)
-                data_filter = search_for(self.dict_to_search_for, self.data)
-            else:
-                del self.dict_to_search_for["IsParasite"]
-                data_filter = search_for(self.dict_to_search_for, self.data)
-
-            self.sub_total = len(data_filter) if data_filter else 0
-            self.searchAPI(data_filter)
 
     def onClickedImpact(self):
         """
@@ -390,21 +394,24 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         radio_btn = self.sender()
         data_filter = []
+        print('onClickedImpact',self.data)
 
         if radio_btn.isChecked():
-            if radio_btn.text() == 'High':
-                item = {"ImpactId": 'Hi', }
+            print(radio_btn.text())
+            if radio_btn.text() == 'True':
+                item = {"IsHighImpact": True, }
                 self.dict_to_search_for.update(item)
                 data_filter = search_for(self.dict_to_search_for, self.data)
 
 
-            elif radio_btn.text() == 'Low/Unknown':
-                item = {"ImpactId": 'Lo', }
+
+            elif radio_btn.text() == 'False':
+                item = {"IsHighImpact": False, }
                 self.dict_to_search_for.update(item)
                 data_filter = search_for(self.dict_to_search_for, self.data)
 
             else:
-                del self.dict_to_search_for["ImpactId"]
+                del self.dict_to_search_for["IsHighImpact"]
                 data_filter = search_for(self.dict_to_search_for, self.data)
 
         self.treeWidgetData.clear()
@@ -422,27 +429,27 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         if radio_btn.isChecked():
             if radio_btn.text() == 'Alien':
-                item = {"StatusId": "A", }
+                item = {"Status": "A", }
                 self.dict_to_search_for.update(item)
                 data_filter = search_for(self.dict_to_search_for, self.data)
 
             elif radio_btn.text() == 'Cryptogenic':
-                item = {"StatusId": "C", }
+                item = {"Status": "C", }
                 self.dict_to_search_for.update(item)
                 data_filter = search_for(self.dict_to_search_for, self.data)
 
             elif radio_btn.text() == 'Questionable':
-                item = {"StatusId": "Q", }
+                item = {"Status": "Q", }
                 self.dict_to_search_for.update(item)
                 data_filter = search_for(self.dict_to_search_for, self.data)
 
             elif radio_btn.text() == 'Unkhow':
-                item = {"StatusId": "N"}
+                item = {"Status": "N"}
                 self.dict_to_search_for.update(item)
                 data_filter = search_for(self.dict_to_search_for, self.data)
 
             else:
-                del self.dict_to_search_for["StatusId"]
+                del self.dict_to_search_for["Status"]
                 data_filter = search_for(self.dict_to_search_for, self.data)
 
         self.treeWidgetData.clear()
@@ -461,20 +468,9 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         speciesname = species_name
         skip = 0
         len_results = 1
-
         layer_name = f"{speciesid}_{speciesname}"
+        grid_count = 0
 
-        def fetch_data(speciesid, skip):
-
-            url_grid = f'https://easin.jrc.ec.europa.eu/api/geo/speciesid/' \
-                       f'{speciesid}/layertype/grid/take/50/skip/{skip}'
-            req = request.Request(url_grid)
-
-            self.requestInfo.setText(f'...requesting grid info')
-
-            with request.urlopen(req) as f:
-                return json.loads(f.read().decode(
-                    'utf-8'))
 
         temp = QgsVectorLayer(
             "Polygon?crs=epsg:3035"
@@ -488,9 +484,37 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             "&field=DataPartner:string",
             layer_name, "memory")
 
+        def fetch_data(speciesid, skip):
+
+            # url_grid = f'https://easin.jrc.ec.europa.eu/api/geo/speciesid/' \
+            # f'{speciesid}/layertype/grid/take/50/skip/{skip}'
+            url_grid = f'https://easin.jrc.ec.europa.eu/apixg/geoxg/speciesid/' \
+                       f'{speciesid}/layertype/grid/skip/{skip}/take/50'
+
+            print(url_grid)
+
+            # self.logText.appendPlainText(f'- API Geospatial Web Service URL: {url_grid} ')
+
+            req = request.Request(url_grid)
+
+            self.requestInfo.setText(f'...requesting grid info')
+
+            try:
+                with request.urlopen(req) as f:
+                    respuesta = json.loads(f.read().decode('utf-8'))
+                    ## print(respuesta)
+                    return respuesta
+
+            except Exception as error:
+                print(f'Error: {error}')
+                self.requestInfo.setText(f"- API Error: {error}")
+                self.logText.appendPlainText(f"- API Error: {error}")
+                QgsMessageLog.logMessage(
+                    f'API Error: {error}', level=Qgis.Critical)
+
         def addGrid(temp, apidata):
             temp.startEditing()
-
+            # print('apidata', apidata)
             for feature in apidata:
                 geom = QgsGeometry.fromWkt(feature['Wkt'])
                 feat = QgsFeature()
@@ -513,28 +537,65 @@ class GeoEASINDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
             temp.commitChanges()
 
-        while len_results > 0:
-            new_data = fetch_data(speciesid, skip)
-            skip += 50
-            results = new_data['results']
-            len_results = len(results)
+        results = fetch_data(speciesid, skip)
 
-            addGrid(temp, results)
+        if isinstance(results, dict):
+            self.requestInfo.setText(
+                f"Info: There are no results based on your search critieria. Please check the parameters you passed.")
+            self.logText.appendPlainText(f"- Info: {results}")
+        else:
+            while len_results > 0 and isinstance(results, list):
+                results = fetch_data(speciesid, skip)
+                print('1.- fetch_data', len_results)
+                print('2.- len_results', len_results)
+                is_a_list = isinstance(results, list)
+                print('3.- comprueba si es una lista', is_a_list)
+                if is_a_list:
+                    skip += 50
+                    print('4.- skip += 50', skip)
+                    ## results = new_data['results']
+                    len_results = len(results)
+                    grid_count += len_results
+                    print('5.- Actualiza nº de grids', grid_count)
+                    print('6.- lanzaría addGridd')
+                    addGrid(temp, results)
 
         if temp.featureCount() > 0:
             # temp.renderer().symbol().setColor(QColor("red"))
             # temp.triggerRepaint()
             QgsProject.instance().addMapLayer(temp)
 
-            self.requestInfo.setText(f'{layer_name} layer added.')
+            self.requestInfo.setText(f'{layer_name} layer added. Total grids: {temp.featureCount()}')
             self.iface.messageBar().pushMessage("INFO", f'{layer_name} layer added.', Qgis.Info, 5)
 
             self.logText.appendPlainText('')
             self.logText.appendPlainText(datetime.now().strftime("%Y/%m/%d, %H:%M:%S"))
             self.logText.appendPlainText(f'- Grid layer added: {layer_name}')
-            self.logText.appendPlainText(
-                f'- API URL: https://easin.jrc.ec.europa.eu/api/geo/speciesid/{speciesid}/layertype/grid/take/50/skip/0')
             self.logText.appendPlainText(f'- Total grids: {temp.featureCount()}')
+            self.logText.appendPlainText(f'- Attributtes summary:')
+
+
+            attributes_list = ["YearMin", "YearMax", "DataPartner", "Reference", "Native"]
+
+            def log_attribute_values(attribute_name, feature_iterator):
+                self.logText.appendPlainText(f"   * Field: '{attribute_name}'")
+                values_count_dic = {}
+
+                for feature in feature_iterator:
+                    value = feature[attribute_name]
+                    if value in values_count_dic:
+                        values_count_dic[value] += 1
+                    else:
+                        values_count_dic[value] = 1
+
+                for value, count in values_count_dic.items():
+                    log_line_reference = f"    + ({count}) {value}"
+                    self.logText.appendPlainText(log_line_reference)
+
+                self.logText.appendPlainText("")
+
+            for attribute_name in attributes_list:
+                log_attribute_values(attribute_name, temp.getFeatures())
 
             advice_message = 'Do you want to zoom in the new layer?'
             reply = QMessageBox.question(self.iface.mainWindow(), 'Add grid to map', advice_message,
